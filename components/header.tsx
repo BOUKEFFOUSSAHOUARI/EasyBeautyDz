@@ -2,14 +2,27 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { Search, ShoppingBag, Menu } from "lucide-react";
+import { Search, ShoppingBag, Menu, Globe } from "lucide-react";
 import { Button } from "./ui/button";
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Drawer } from "@/components/ui/drawer";
+import { LanguageContext } from './LanguageProvider';
 
 export function Header() {
   const { user, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { lang, setLang } = useContext(LanguageContext);
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
+
+  useEffect(() => {
+    if (!showLangDropdown) return;
+    const handler = (e: MouseEvent) => {
+      const dropdown = document.getElementById('header-lang-dropdown');
+      if (dropdown && !dropdown.contains(e.target as Node)) setShowLangDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showLangDropdown]);
 
   return (
     <header className="border-b bg-white sticky top-0 z-50">
@@ -33,6 +46,19 @@ export function Header() {
           <Button variant="ghost" size="icon">
             <ShoppingBag className="h-5 w-5" />
           </Button>
+          {/* Language Switcher (Desktop) */}
+          <div className="relative">
+            <button onClick={() => setShowLangDropdown(v => !v)} className="p-2 rounded hover:bg-gray-100 focus:outline-none">
+              <Globe className="h-5 w-5 text-black" />
+            </button>
+            {showLangDropdown && (
+              <div id="header-lang-dropdown" className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg z-50">
+                <button onClick={() => { setLang('en'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'en' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>English</button>
+                <button onClick={() => { setLang('fr'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'fr' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>Français</button>
+                <button onClick={() => { setLang('ar'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'ar' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>العربية</button>
+              </div>
+            )}
+          </div>
           {user ? (
             <>
               {user.role === 'ADMIN' && (
@@ -76,6 +102,20 @@ export function Header() {
               <Link href="/shop" className="text-lg font-medium text-black" onClick={() => setMenuOpen(false)}>
                 Shop All
               </Link>
+              {/* Language Switcher (Mobile) */}
+              <div className="relative">
+                <button onClick={() => setShowLangDropdown(v => !v)} className="p-2 rounded hover:bg-gray-100 focus:outline-none flex items-center">
+                  <Globe className="h-5 w-5 text-black mr-2" />
+                  <span className="text-lg">Change Language</span>
+                </button>
+                {showLangDropdown && (
+                  <div id="header-lang-dropdown" className="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-50">
+                    <button onClick={() => { setLang('en'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'en' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>English</button>
+                    <button onClick={() => { setLang('fr'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'fr' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>Français</button>
+                    <button onClick={() => { setLang('ar'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'ar' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>العربية</button>
+                  </div>
+                )}
+              </div>
               {user ? (
                 <>
                   {user.role === 'ADMIN' && (

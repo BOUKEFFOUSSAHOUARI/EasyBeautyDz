@@ -24,14 +24,14 @@ export default function CMSPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-black">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 font-clash">Content Management</h1>
         <p className="mt-2 text-gray-600 font-inter">Manage your website content and appearance</p>
       </div>
 
       {/* Hero Section Editor */}
-      <Card>
+      <Card className="bg-white text-black">
         <CardHeader>
           <CardTitle>Hero Section</CardTitle>
         </CardHeader>
@@ -43,6 +43,7 @@ export default function CMSPage() {
               value={heroData.title}
               onChange={(e) => setHeroData({ ...heroData, title: e.target.value })}
               placeholder="Enter hero title"
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
 
@@ -54,6 +55,7 @@ export default function CMSPage() {
               onChange={(e) => setHeroData({ ...heroData, subtitle: e.target.value })}
               placeholder="Enter hero subtitle"
               rows={3}
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
 
@@ -65,6 +67,7 @@ export default function CMSPage() {
                 value={heroData.buttonText}
                 onChange={(e) => setHeroData({ ...heroData, buttonText: e.target.value })}
                 placeholder="Enter button text"
+                className="bg-white text-black border-gray-300 focus:ring-green-200"
               />
             </div>
             <div className="space-y-2">
@@ -75,13 +78,13 @@ export default function CMSPage() {
                   type="color"
                   value={heroData.buttonColor}
                   onChange={(e) => setHeroData({ ...heroData, buttonColor: e.target.value })}
-                  className="w-16 h-10"
+                  className="w-16 h-10 bg-white border-gray-300"
                 />
                 <Input
                   value={heroData.buttonColor}
                   onChange={(e) => setHeroData({ ...heroData, buttonColor: e.target.value })}
                   placeholder="#ffffff"
-                  className="flex-1"
+                  className="flex-1 bg-white text-black border-gray-300 focus:ring-green-200"
                 />
               </div>
             </div>
@@ -90,8 +93,8 @@ export default function CMSPage() {
           <div className="space-y-2">
             <Label htmlFor="hero-image">Hero Image</Label>
             <div className="flex items-center space-x-2">
-              <Input id="hero-image" type="file" accept="image/*" className="flex-1" />
-              <Button variant="outline">
+              <Input id="hero-image" type="file" accept="image/*" className="flex-1 bg-white text-black border-gray-300" />
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <Upload className="mr-2 h-4 w-4" />
                 Upload
               </Button>
@@ -99,7 +102,7 @@ export default function CMSPage() {
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
               <Save className="mr-2 h-4 w-4" />
               Save Changes
             </Button>
@@ -108,15 +111,15 @@ export default function CMSPage() {
       </Card>
 
       {/* Preview */}
-      <Card>
+      <Card className="bg-white text-black">
         <CardHeader>
           <CardTitle>Preview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-100 p-8 rounded-lg">
+          <div className="bg-gray-50 p-8 rounded-lg">
             <div className="max-w-lg">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4 font-clash">{heroData.title}</h1>
-              <p className="text-gray-600 mb-6 font-inter">{heroData.subtitle}</p>
+              <h1 className="text-4xl font-bold text-black mb-4 font-clash">{heroData.title}</h1>
+              <p className="text-gray-700 mb-6 font-inter">{heroData.subtitle}</p>
               <button
                 style={{ backgroundColor: heroData.buttonColor }}
                 className="px-6 py-3 rounded-full font-medium text-black"

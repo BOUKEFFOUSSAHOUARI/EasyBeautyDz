@@ -367,12 +367,12 @@ export default function ProductsPage() {
                   onValueChange={(value) => setNewProduct(f => ({ ...f, categoryId: value }))}
                   required
                 >
-                  <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a category" />
+                  <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-black placeholder:text-gray-400">
+                    <SelectValue placeholder="Select a category" className="text-black" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
+                      <SelectItem key={category.id} value={category.id} className="text-black">
                         {category.name}
                       </SelectItem>
                     ))}
@@ -520,12 +520,12 @@ export default function ProductsPage() {
                   onValueChange={(value) => setNewProduct(f => ({ ...f, categoryId: value }))}
                   required
                 >
-                  <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a category" />
+                  <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-black placeholder:text-gray-400">
+                    <SelectValue placeholder="Select a category" className="text-black" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
+                      <SelectItem key={category.id} value={category.id} className="text-black">
                         {category.name}
                       </SelectItem>
                     ))}

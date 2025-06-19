@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Search } from "lucide-react"
@@ -18,6 +18,15 @@ interface Product {
   imageUrl?: string;
   price: number;
 }
+
+const t = (key: string, lang: string) => {
+  const translations: any = {
+    en: { Shop: 'Shop', Search: 'Search', Categories: 'Categories' },
+    fr: { Shop: 'Boutique', Search: 'Recherche', Categories: 'Catégories' },
+    ar: { Shop: 'المتجر', Search: 'بحث', Categories: 'الفئات' },
+  };
+  return translations[lang][key] || key;
+};
 
 export default function ShopPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,8 +56,10 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* White spacer */}
-      <div style={{ width: '100%', height: '32px', background: 'white' }} />
+      {/* Shop All header only */}
+      <div className="flex items-center justify-center py-6 mb-2">
+        <span className="text-2xl font-bold text-gray-800">Shop All</span>
+      </div>
 
       {/* Search Bar */}
       <div className="w-full px-4 md:px-0 flex justify-center mt-10 mb-4 bg-white">

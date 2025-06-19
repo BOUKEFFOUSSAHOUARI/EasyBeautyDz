@@ -30,14 +30,14 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-black">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 font-clash">Integrations</h1>
         <p className="mt-2 text-gray-600 font-inter">Connect your store with external services</p>
       </div>
 
       {/* Google Sheets Integration */}
-      <Card>
+      <Card className="bg-white text-black">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -69,6 +69,7 @@ export default function IntegrationsPage() {
                 })
               }
               placeholder="Enter Google Sheets API key"
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
           <div className="space-y-2">
@@ -83,14 +84,15 @@ export default function IntegrationsPage() {
                 })
               }
               placeholder="Enter Google Sheet ID"
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               <ExternalLink className="mr-2 h-4 w-4" />
               Test Connection
             </Button>
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               View Documentation
             </Button>
           </div>
@@ -98,7 +100,7 @@ export default function IntegrationsPage() {
       </Card>
 
       {/* Google Analytics Integration */}
-      <Card>
+      <Card className="bg-white text-black">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -130,14 +132,15 @@ export default function IntegrationsPage() {
                 })
               }
               placeholder="G-XXXXXXXXXX"
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               <ExternalLink className="mr-2 h-4 w-4" />
               Test Connection
             </Button>
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               View Documentation
             </Button>
           </div>
@@ -145,7 +148,7 @@ export default function IntegrationsPage() {
       </Card>
 
       {/* Facebook Pixel Integration */}
-      <Card>
+      <Card className="bg-white text-black">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -177,14 +180,15 @@ export default function IntegrationsPage() {
                 })
               }
               placeholder="Enter Facebook Pixel ID"
+              className="bg-white text-black border-gray-300 focus:ring-green-200"
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               <ExternalLink className="mr-2 h-4 w-4" />
               Test Connection
             </Button>
-            <Button variant="outline" size="sm">
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               View Documentation
             </Button>
           </div>
@@ -193,7 +197,7 @@ export default function IntegrationsPage() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
           <Save className="mr-2 h-4 w-4" />
           Save All Integrations
         </Button>

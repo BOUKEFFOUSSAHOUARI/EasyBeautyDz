@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { RootContent } from "@/components/root-content"
+import { LanguageProvider } from "@/components/LanguageProvider"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,9 +32,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <RootContent>
-          {children}
-        </RootContent>
+        <LanguageProvider>
+          <RootContent>
+            {children}
+          </RootContent>
+        </LanguageProvider>
       </body>
     </html>
   )
