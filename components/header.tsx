@@ -38,15 +38,15 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Desktop Actions */}
-        <div className="hidden md:flex items-center space-x-4">
+        {/* Actions (always visible) */}
+        <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon">
             <Search className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon">
             <ShoppingBag className="h-5 w-5" />
           </Button>
-          {/* Language Switcher (Desktop) */}
+          {/* Language Switcher (Always visible) */}
           <div className="relative">
             <button onClick={() => setShowLangDropdown(v => !v)} className="p-2 rounded hover:bg-gray-100 focus:outline-none">
               <Globe className="h-5 w-5 text-black" />
@@ -102,14 +102,13 @@ export function Header() {
               <Link href="/shop" className="text-lg font-medium text-black" onClick={() => setMenuOpen(false)}>
                 Shop All
               </Link>
-              {/* Language Switcher (Mobile) */}
+              {/* Language Switcher (Always visible) */}
               <div className="relative">
-                <button onClick={() => setShowLangDropdown(v => !v)} className="p-2 rounded hover:bg-gray-100 focus:outline-none flex items-center">
-                  <Globe className="h-5 w-5 text-black mr-2" />
-                  <span className="text-lg">Change Language</span>
+                <button onClick={() => setShowLangDropdown(v => !v)} className="p-2 rounded hover:bg-gray-100 focus:outline-none">
+                  <Globe className="h-5 w-5 text-black" />
                 </button>
                 {showLangDropdown && (
-                  <div id="header-lang-dropdown" className="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-50">
+                  <div id="header-lang-dropdown" className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg z-50">
                     <button onClick={() => { setLang('en'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'en' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>English</button>
                     <button onClick={() => { setLang('fr'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'fr' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>Français</button>
                     <button onClick={() => { setLang('ar'); setShowLangDropdown(false); }} className={`block w-full text-left px-4 py-2 hover:bg-green-50 ${lang === 'ar' ? 'text-green-700 font-bold' : 'text-gray-700'}`}>العربية</button>
