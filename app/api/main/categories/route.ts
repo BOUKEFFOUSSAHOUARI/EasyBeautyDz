@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Get all categories (Admin only - or public depending on requirements)
 export async function GET(req: NextRequest) {

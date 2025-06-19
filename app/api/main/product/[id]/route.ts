@@ -79,6 +79,15 @@ export async function PUT(
     const isActivated = formData.get('isActivated') === 'true';
     const imageFile = formData.get('imageFile') as File | null;
     const imageUrlFromForm = formData.get('imageUrl') as string | null; // This will be the existing URL if no new file is uploaded
+    const productPriceForQtyRaw = formData.get('productPriceForQty') as string | null;
+    let productPriceForQty = null;
+    if (productPriceForQtyRaw) {
+      try {
+        productPriceForQty = JSON.parse(productPriceForQtyRaw);
+      } catch (e) {
+        return NextResponse.json({ error: 'Invalid productPriceForQty format' }, { status: 400 });
+      }
+    }
 
     existingProduct = await prisma.product.findUnique({
       where: { id }
@@ -196,6 +205,7 @@ export async function PUT(
     if (quantity !== null) updateData.quantity = parseInt(quantity);
     updateData.isActivated = isActivated; // Always update isActivated
     updateData.imageUrl = newImageUrl; // Use the (potentially new) image URL
+    if (productPriceForQty !== null) updateData.productPriceForQty = productPriceForQty;
 
     const updatedProduct = await prisma.product.update({
       where: { id },

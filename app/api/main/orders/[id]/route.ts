@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
+
 
 // Get order by ID
 export async function GET(
@@ -71,7 +72,7 @@ export async function PUT(
     }
 
     const { id } = params;
-    const { status, wilayaId } = await req.json();
+    const { status, wilayaId, orderItems } = await req.json();
 
     const existingOrder = await prisma.order.findUnique({
       where: { id }
@@ -87,6 +88,59 @@ export async function PUT(
     const updateData: any = {};
     if (status) updateData.status = status.toUpperCase();
     if (wilayaId) updateData.wilayaId = wilayaId;
+
+    // If orderItems are provided, update them with correct price logic
+    if (orderItems && Array.isArray(orderItems) && orderItems.length > 0) {
+      // Validate and prepare new order items
+      const validatedItems = [];
+      for (const item of orderItems) {
+        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+        if (!product || !product.isActivated) {
+          return NextResponse.json(
+            { error: `Product ${item.productId} not found or inactive` },
+            { status: 400 }
+          );
+        }
+        if (product.quantity !== null && product.quantity < item.quantity) {
+          return NextResponse.json(
+            { error: `Insufficient stock for product ${product.title}` },
+            { status: 400 }
+          );
+        }
+        // Determine price based on productPriceForQty
+        let unitPrice = product.price;
+        if (product.productPriceForQty && Array.isArray(product.productPriceForQty)) {
+          const validTiers: { qty: number; price: number }[] = (product.productPriceForQty as any[]).reduce((arr, entry) => {
+            if (entry && typeof entry === 'object' && typeof entry.qty === 'number' && typeof entry.price === 'number') {
+              arr.push({ qty: entry.qty, price: entry.price });
+            }
+            return arr;
+          }, [] as { qty: number; price: number }[]);
+          const sorted: { qty: number; price: number }[] = validTiers.sort((a, b) => a.qty - b.qty);
+          for (let i = sorted.length - 1; i >= 0; i--) {
+            if (item.quantity >= sorted[i].qty) {
+              unitPrice = sorted[i].price;
+              break;
+            }
+          }
+        }
+        validatedItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: unitPrice
+        });
+      }
+      // Remove old order items and add new ones
+      await prisma.orderItem.deleteMany({ where: { orderId: id } });
+      await prisma.order.update({
+        where: { id },
+        data: {
+          orderItems: {
+            create: validatedItems
+          }
+        }
+      });
+    }
 
     const updatedOrder = await prisma.order.update({
       where: { id },

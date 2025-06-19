@@ -16,6 +16,7 @@ interface Wilaya {
   name: string
   deliveryPrice: number
   agencyName: string
+  wilaya_number: number
   createdAt: string
 }
 
@@ -24,7 +25,7 @@ export default function ShippingPage() {
   const { toast } = useToast()
   const [wilayas, setWilayas] = useState<Wilaya[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [newWilaya, setNewWilaya] = useState({ name: "", deliveryPrice: "", agencyName: "" })
+  const [newWilaya, setNewWilaya] = useState({ name: "", deliveryPrice: "", agencyName: "", wilaya_number: "" })
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -67,7 +68,8 @@ export default function ShippingPage() {
         body: JSON.stringify({
           name: newWilaya.name,
           deliveryPrice: Number(newWilaya.deliveryPrice),
-          agencyName: newWilaya.agencyName
+          agencyName: newWilaya.agencyName,
+          wilaya_number: newWilaya.wilaya_number
         }),
       })
       
@@ -83,7 +85,7 @@ export default function ShippingPage() {
         description: data.message || "Wilaya added successfully",
         className: "text-green-600"
       })
-      setNewWilaya({ name: "", deliveryPrice: "", agencyName: "" })
+      setNewWilaya({ name: "", deliveryPrice: "", agencyName: "", wilaya_number: "" })
       setIsDialogOpen(false)
       fetchWilayas()
     } catch (error) {
@@ -142,7 +144,8 @@ export default function ShippingPage() {
         body: JSON.stringify({
           name: newWilaya.name,
           deliveryPrice: Number(newWilaya.deliveryPrice),
-          agencyName: newWilaya.agencyName
+          agencyName: newWilaya.agencyName,
+          wilaya_number: newWilaya.wilaya_number
         }),
       })
       
@@ -158,7 +161,7 @@ export default function ShippingPage() {
         description: data.message || "Wilaya updated successfully",
         className: "text-green-600"
       })
-      setNewWilaya({ name: "", deliveryPrice: "", agencyName: "" })
+      setNewWilaya({ name: "", deliveryPrice: "", agencyName: "", wilaya_number: "" })
       setIsEditDialogOpen(false)
       fetchWilayas()
     } catch (error) {
@@ -227,6 +230,17 @@ export default function ShippingPage() {
                   required
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Wilaya Number</Label>
+                <Input
+                  type="number"
+                  value={newWilaya.wilaya_number}
+                  onChange={e => setNewWilaya(prev => ({ ...prev, wilaya_number: e.target.value }))}
+                  placeholder="Enter wilaya number"
+                  className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
+                  required
+                />
+              </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
                   type="button"
@@ -281,6 +295,17 @@ export default function ShippingPage() {
                   value={newWilaya.agencyName}
                   onChange={(e) => setNewWilaya(prev => ({ ...prev, agencyName: e.target.value }))}
                   placeholder="Enter shipping agency name"
+                  className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Wilaya Number</Label>
+                <Input
+                  type="number"
+                  value={newWilaya.wilaya_number}
+                  onChange={e => setNewWilaya(prev => ({ ...prev, wilaya_number: e.target.value }))}
+                  placeholder="Enter wilaya number"
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                   required
                 />
@@ -359,7 +384,8 @@ export default function ShippingPage() {
                               setNewWilaya({ 
                                 name: wilaya.name,
                                 deliveryPrice: wilaya.deliveryPrice.toString(),
-                                agencyName: wilaya.agencyName
+                                agencyName: wilaya.agencyName,
+                                wilaya_number: wilaya.wilaya_number?.toString() || ""
                               });
                               setIsEditDialogOpen(true);
                           }}

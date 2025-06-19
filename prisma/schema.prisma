@@ -48,6 +48,8 @@ model Product {
   sku      String? @unique
   quantity Int?    @default(0)
 
+  productPriceForQty Json? // Array of {qty, price} objects
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -80,6 +82,8 @@ model Order {
   // Delivery information
   wilayaId String?
   wilaya   Wilaya? @relation(fields: [wilayaId], references: [id], onDelete: SetNull)
+  baladia  String?
+  house    Boolean  @default(false)
 
   @@map("orders")
 }
@@ -134,6 +138,7 @@ model Wilaya {
   name          String @unique // Wilaya name
   deliveryPrice Float          // Delivery price for this wilaya
   agencyName    String         // Shipping agency name
+  wilaya_number  Int          @default(0)            // Wilaya number
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

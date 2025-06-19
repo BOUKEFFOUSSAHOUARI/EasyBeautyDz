@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Update wilaya (Admin only)
 export async function PUT(
@@ -26,7 +26,7 @@ export async function PUT(
       req.json(),
       Promise.resolve(params.id)
     ]);
-    const { name, deliveryPrice, agencyName } = formData;    // Check if wilaya exists
+    const { name, deliveryPrice, agencyName, wilaya_number } = formData;    // Check if wilaya exists
     const existingWilaya = await prisma.wilaya.findUnique({
       where: { id: wilayaId }
     });
@@ -38,11 +38,28 @@ export async function PUT(
       );
     }
 
+    // If wilaya_number is provided, check uniqueness (exclude current wilaya)
+    if (wilaya_number !== undefined && wilaya_number !== null) {
+      const otherWilaya = await prisma.wilaya.findFirst({
+        where: {
+          wilaya_number: Number(wilaya_number),
+          NOT: { id: wilayaId }
+        }
+      });
+      if (otherWilaya) {
+        return NextResponse.json(
+          { error: 'Wilaya with this number already exists' },
+          { status: 409 }
+        );
+      }
+    }
+
     // Prepare update data
     const updateData: any = {};
     if (name) updateData.name = name;
     if (deliveryPrice) updateData.deliveryPrice = parseFloat(deliveryPrice);
     if (agencyName) updateData.agencyName = agencyName;
+    if (wilaya_number !== undefined && wilaya_number !== null) updateData.wilaya_number = Number(wilaya_number);
 
     // Update wilaya
     const updatedWilaya = await prisma.wilaya.update({

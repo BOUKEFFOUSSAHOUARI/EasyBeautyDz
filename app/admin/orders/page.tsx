@@ -51,6 +51,7 @@ interface ProductType {
 interface WilayaType {
   id: string
   name: string
+  wilaya_number?: number | string
 }
 
 export default function OrdersPage() {
@@ -70,8 +71,12 @@ export default function OrdersPage() {
     phone: "",
     email: "",
     wilayaId: "",
+    baladia: "",
+    house: false,
     orderItems: [{ productId: "", quantity: 1 }]
   })
+  const [baladias, setBaladias] = useState<{ name: string; ar_name: string; wilaya_id: string }[]>([])
+  const [baladiaData, setBaladiaData] = useState<any[]>([])
 
   useEffect(() => {
     fetchOrders()
@@ -80,6 +85,27 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchWilayas()
   }, [])
+
+  useEffect(() => {
+    fetch('/shipping/filtered_output_baladia.json')
+      .then(res => res.json())
+      .then(setBaladiaData)
+      .catch(() => setBaladiaData([]));
+  }, []);
+
+  useEffect(() => {
+    if (newOrder.wilayaId) {
+      const selectedWilaya = wilayas.find(w => w.id === newOrder.wilayaId)
+      if (selectedWilaya) {
+        const wilayaNumber = selectedWilaya.wilaya_number?.toString()
+        setBaladias(baladiaData.filter(b => b.wilaya_id === wilayaNumber))
+      } else {
+        setBaladias([])
+      }
+    } else {
+      setBaladias([])
+    }
+  }, [newOrder.wilayaId, wilayas, baladiaData])
 
   const fetchOrders = async () => {
     setIsLoading(true)
@@ -107,9 +133,12 @@ export default function OrdersPage() {
   const fetchWilayas = async () => {
     try {
       const response = await fetch('/api/main/wilayas')
-      const data = await response.json()
+      const data: { wilayas: any[]; error?: string } = await response.json()
       if (response.ok) {
-        setWilayas(data.wilayas || [])
+        setWilayas((data.wilayas || []).map((w: any) => ({
+          ...w,
+          wilaya_number: w.wilaya_number
+        })))
       } else {
         throw new Error(data.error || "Failed to load wilayas")
       }
@@ -154,6 +183,8 @@ export default function OrdersPage() {
         phone: "",
         email: "",
         wilayaId: "",
+        baladia: "",
+        house: false,
         orderItems: [{ productId: "", quantity: 1 }]
       })
       setShowCreateOrder(false)
@@ -322,6 +353,33 @@ export default function OrdersPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Baladia</Label>
+                  <Select
+                    value={newOrder.baladia}
+                    onValueChange={value => setNewOrder(o => ({ ...o, baladia: value }))}
+                    required
+                  >
+                    <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400">
+                      <SelectValue placeholder="Select a baladia" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {baladias.map(b => (
+                        <SelectItem key={b.name} value={b.name} className="text-black">{b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm font-medium text-gray-700">House Delivery</Label>
+                  <input
+                    type="checkbox"
+                    checked={newOrder.house}
+                    onChange={e => setNewOrder(o => ({ ...o, house: e.target.checked }))}
+                    className="h-4 w-4 border-gray-300 rounded"
+                  />
+                  <span className="text-gray-600 text-sm">Deliver to house (checked) or agency office (unchecked)</span>
                 </div>
                 <div className="space-y-2">
                   <Label>Products</Label>

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Add new wilaya (Admin only)
 export async function POST(req: NextRequest) {
@@ -17,25 +17,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, deliveryPrice, agencyName } = await req.json();
+    const { name, deliveryPrice, agencyName, wilaya_number } = await req.json();
 
-    if (!name || !deliveryPrice || !agencyName) {
+    if (!name || !deliveryPrice || !agencyName || wilaya_number === undefined || wilaya_number === null) {
       return NextResponse.json(
-        { error: 'Name, delivery price, and agency name are required' },
+        { error: 'Name, delivery price, agency name, and wilaya_number are required' },
         { status: 400 }
       );
     }
 
-    // Check if wilaya already exists
-    const existingWilaya = await prisma.wilaya.findUnique({
-      where: { name }
+    // Check if wilaya name or wilaya_number already exists
+    const existingWilaya = await prisma.wilaya.findFirst({
+      where: {
+        OR: [
+          { name },
+          { wilaya_number: Number(wilaya_number) }
+        ]
+      }
     });
 
     if (existingWilaya) {
-      return NextResponse.json(
-        { error: 'Wilaya with this name already exists' },
-        { status: 409 }
-      );
+      if (existingWilaya.name === name) {
+        return NextResponse.json(
+          { error: 'Wilaya with this name already exists' },
+          { status: 409 }
+        );
+      } else {
+        return NextResponse.json(
+          { error: 'Wilaya with this number already exists' },
+          { status: 409 }
+        );
+      }
     }
 
     // Create wilaya
@@ -43,9 +55,11 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         deliveryPrice: parseFloat(deliveryPrice),
-        agencyName
+        agencyName,
+        wilaya_number: Number(wilaya_number)
       }
-    });    return NextResponse.json({
+    });
+    return NextResponse.json({
       message: `Wilaya ${newWilaya.name} created successfully with delivery price ${newWilaya.deliveryPrice.toLocaleString()} DA`,
       wilaya: newWilaya
     });

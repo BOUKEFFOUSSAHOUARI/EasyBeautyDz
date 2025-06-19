@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
     const quantity = formData.get('quantity') as string | null;
     const isActivated = formData.get('isActivated') === 'true';
     const imageFile = formData.get('imageFile') as File | null;
+    const productPriceForQtyRaw = formData.get('productPriceForQty') as string | null;
+    let productPriceForQty = null;
+    if (productPriceForQtyRaw) {
+      try {
+        productPriceForQty = JSON.parse(productPriceForQtyRaw);
+      } catch (e) {
+        return NextResponse.json({ error: 'Invalid productPriceForQty format' }, { status: 400 });
+      }
+    }
 
     // Validate required fields
     if (!title || !price || !categoryId || !imageFile) {
@@ -162,7 +171,8 @@ export async function POST(req: NextRequest) {
         categoryId,
         sku,
         quantity: quantity ? parseInt(quantity) : 0,
-        isActivated
+        isActivated,
+        productPriceForQty,
       },
       include: {
         category: {

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Get all orders (Admin only)
 export async function GET(req: NextRequest) {
@@ -88,7 +88,9 @@ export async function POST(req: NextRequest) {
       phone,
       email,
       wilayaId,
-      orderItems
+      orderItems,
+      baladia,
+      house
     } = await req.json();
 
     // Validate required fields
@@ -110,10 +112,9 @@ export async function POST(req: NextRequest) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId }
       });
-  console.log(product);
-      if (!product || !product.isActivated) {
+      if (!product) {
         return NextResponse.json(
-          { error: `Product ${item.productId} not found or inactive` },
+          { error: `Product ${item.productId} not found` },
           { status: 400 }
         );
       }
@@ -125,13 +126,32 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const itemTotal = product.price * item.quantity;
+      // Determine price based on productPriceForQty
+      let unitPrice = product.price;
+      if (product.productPriceForQty && Array.isArray(product.productPriceForQty)) {
+        // Filter and sort by qty ascending
+        const validTiers: { qty: number; price: number }[] = (product.productPriceForQty as any[]).reduce((arr, entry) => {
+          if (entry && typeof entry === 'object' && typeof entry.qty === 'number' && typeof entry.price === 'number') {
+            arr.push({ qty: entry.qty, price: entry.price });
+          }
+          return arr;
+        }, [] as { qty: number; price: number }[]);
+        const sorted: { qty: number; price: number }[] = validTiers.sort((a, b) => a.qty - b.qty);
+        for (let i = sorted.length - 1; i >= 0; i--) {
+          if (item.quantity >= sorted[i].qty) {
+            unitPrice = sorted[i].price;
+            break;
+          }
+        }
+      }
+
+      const itemTotal = unitPrice * item.quantity;
       total += itemTotal;
 
       validatedItems.push({
         productId: item.productId,
         quantity: item.quantity,
-        price: product.price
+        price: unitPrice
       });
     }
 
@@ -157,6 +177,8 @@ export async function POST(req: NextRequest) {
         email,
         total,
         wilayaId: wilayaId || null,
+        baladia: baladia || null,
+        house: typeof house === 'boolean' ? house : false,
         orderItems: {
           create: validatedItems
         }

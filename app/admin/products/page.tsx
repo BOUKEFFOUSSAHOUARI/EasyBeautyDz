@@ -33,6 +33,7 @@ interface ProductType {
   categoryId: string
   createdAt: string
   updatedAt: string
+  productPriceForQty?: { qty: number; price: number }[]
 }
 
 interface CategoryType {
@@ -64,6 +65,7 @@ export default function ProductsPage() {
   const [deleteId, setDeleteId] = useState<string>("")
   const [editingId, setEditingId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
+  const [productPriceForQty, setProductPriceForQty] = useState<{ qty: string; price: string }[]>([])
 
   useEffect(() => {
     fetchProducts()
@@ -128,6 +130,7 @@ export default function ProductsPage() {
       if (imageFile) {
         formData.append("imageFile", imageFile)
       }
+      formData.append("productPriceForQty", JSON.stringify(productPriceForQty.filter(p => p.qty && p.price).map(p => ({ qty: Number(p.qty), price: Number(p.price) }))));
 
       const response = await fetch('/api/main/product', {
         method: 'POST',
@@ -154,6 +157,7 @@ export default function ProductsPage() {
         categoryId: "",
         isActivated: true,
       })
+      setProductPriceForQty([])
       setImageFile(null)
       setImageUrlPreview("")
       setIsDialogOpen(false)
@@ -183,6 +187,7 @@ export default function ProductsPage() {
     setImageUrlPreview(product.imageUrl)
     setImageFile(null) // Clear selected file for edit, rely on preview
     setIsEditDialogOpen(true)
+    setProductPriceForQty(product.productPriceForQty ? product.productPriceForQty.map(p => ({ qty: p.qty.toString(), price: p.price.toString() })) : [])
   }
 
   const handleUpdateProduct = async (e: React.FormEvent) => {
@@ -209,6 +214,7 @@ export default function ProductsPage() {
         // If no new file is selected, and image wasn't cleared, send the existing URL
         formData.append("imageUrl", imageUrlPreview);
       }
+      formData.append("productPriceForQty", JSON.stringify(productPriceForQty.filter(p => p.qty && p.price).map(p => ({ qty: Number(p.qty), price: Number(p.price) }))));
 
       const response = await fetch(`/api/main/product/${editingId}`, {
         method: 'PUT',
@@ -235,6 +241,7 @@ export default function ProductsPage() {
         categoryId: "",
         isActivated: true,
       })
+      setProductPriceForQty([])
       setImageFile(null)
       setImageUrlPreview("")
       setIsEditDialogOpen(false)
@@ -409,7 +416,36 @@ export default function ProductsPage() {
                   checked={newProduct.isActivated}
                   onCheckedChange={(checked) => setNewProduct(f => ({ ...f, isActivated: checked }))}
                 />
-                <Label htmlFor="isActivated" className="text-green-600">Product is activated</Label>
+                <Label htmlFor="isActivated" className="text-green-600 font-bold">Product is activated</Label>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
+                {productPriceForQty.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center mb-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Qty"
+                      value={item.qty}
+                      onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, qty: e.target.value } : el))}
+                      className="w-24 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="Price per one"
+                      value={item.price}
+                      onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, price: e.target.value } : el))}
+                      className="w-32 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
+                    />
+                    <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => arr.filter((_, i) => i !== idx))} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => [...arr, { qty: '', price: '' }])} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
+                  Add Qty/Price
+                </Button>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
@@ -541,7 +577,36 @@ export default function ProductsPage() {
                   checked={newProduct.isActivated}
                   onCheckedChange={(checked) => setNewProduct(f => ({ ...f, isActivated: checked }))}
                 />
-                <Label htmlFor="editIsActivated" className="text-green-600">Product is activated</Label>
+                <Label htmlFor="editIsActivated" className="text-green-600 font-bold">Product is activated</Label>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
+                {productPriceForQty.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center mb-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Qty"
+                      value={item.qty}
+                      onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, qty: e.target.value } : el))}
+                      className="w-24 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="Price per one"
+                      value={item.price}
+                      onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, price: e.target.value } : el))}
+                      className="w-32 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
+                    />
+                    <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => arr.filter((_, i) => i !== idx))} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => [...arr, { qty: '', price: '' }])} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
+                  Add Qty/Price
+                </Button>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
@@ -640,6 +705,28 @@ export default function ProductsPage() {
                         >
                           <Trash className="h-4 w-4" />
                         </button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50"><Plus className="h-4 w-4" /></Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-white max-w-xs">
+                            <DialogHeader>
+                              <DialogTitle>Quantity-based Pricing</DialogTitle>
+                            </DialogHeader>
+                            {product.productPriceForQty && product.productPriceForQty.length > 0 ? (
+                              <table className="w-full text-sm mt-2">
+                                <thead>
+                                  <tr><th>Qty</th><th>Price/one</th></tr>
+                                </thead>
+                                <tbody>
+                                  {product.productPriceForQty.map((p, i) => (
+                                    <tr key={i}><td>{p.qty}</td><td>{p.price}</td></tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : <div className="text-gray-500">No special pricing</div>}
+                          </DialogContent>
+                        </Dialog>
                       </td>
                     </tr>
                   ))}
