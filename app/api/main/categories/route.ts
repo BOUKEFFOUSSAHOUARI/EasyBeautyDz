@@ -8,14 +8,7 @@ import { prisma } from '@/lib/prisma/prismaClient';
 export async function GET(req: NextRequest) {
   try {
     // Optionally, check if user is admin if categories should only be fetched by admins
-    const currentUser = await getUserFromToken(req);
-    console.log(currentUser);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
-        { status: 403 }
-      );
-    }
+    
 
     const categories = await prisma.category.findMany({
       select: {
