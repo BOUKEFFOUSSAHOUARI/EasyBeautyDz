@@ -39,7 +39,10 @@ export default function ShopPage() {
   useEffect(() => {
     fetch("/api/main/categories")
       .then(res => res.json())
-      .then(data => setCategories(data.categories || []));
+      .then(data => {
+        setCategories(data.categories || []);
+        console.log('Fetched categories:', data.categories);
+      });
   }, []);
 
   // Fetch products when search or selectedCategory changes
@@ -78,15 +81,22 @@ export default function ShopPage() {
       {/* Category Filter Bar */}
       <div className="w-full overflow-x-auto py-2 px-2 sticky top-0 z-30 bg-white mb-4">
         <div className="flex space-x-3 min-w-max">
-          {categories.map((cat) => (
-            <label key={cat.id} className="flex items-center bg-gray-100 rounded-full px-4 py-2 cursor-pointer whitespace-nowrap">
-              <Checkbox
-                checked={selectedCategory === cat.id}
-                onCheckedChange={() => setSelectedCategory(selectedCategory === cat.id ? "" : cat.id)}
-              />
-              <span className="ml-2 text-gray-700 font-inter text-sm">{cat.name}</span>
-            </label>
-          ))}
+          {categories.length === 0 ? (
+            <span className="text-gray-400 px-4">No categories found</span>
+          ) : (
+            categories.map((cat) => (
+              <label
+                key={cat.id}
+                className={`flex items-center rounded-full px-4 py-2 cursor-pointer whitespace-nowrap transition-colors duration-200 ${selectedCategory === cat.id ? 'bg-green-600 text-white' : 'bg-gray-700 text-white'}`}
+              >
+                <Checkbox
+                  checked={selectedCategory === cat.id}
+                  onCheckedChange={() => setSelectedCategory(selectedCategory === cat.id ? "" : cat.id)}
+                />
+                <span className="ml-2 font-inter text-sm">{cat.name}</span>
+              </label>
+            ))
+          )}
         </div>
       </div>
 
