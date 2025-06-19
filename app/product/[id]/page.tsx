@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Search, User, ShoppingBag, Minus, Plus, Heart, Star, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LanguageContext } from "@/components/LanguageProvider"
 
 interface Product {
   id: string;
@@ -29,6 +30,60 @@ interface Baladia {
   wilaya_id: string;
 }
 
+const t = (key: string, lang: string) => {
+  const translations: any = {
+    en: {
+      'First Name': 'First Name',
+      'Last Name': 'Last Name',
+      'Phone': 'Phone',
+      'Email (optional)': 'Email (optional)',
+      'Select Wilaya': 'Select Wilaya',
+      'Select Baladia': 'Select Baladia',
+      'House': 'House',
+      'Checkout': 'Checkout',
+      'Place Order': 'Place Order',
+      'Order placed successfully!': 'Order placed successfully!',
+      'Order failed': 'Order failed',
+      'Bulk Pricing:': 'Bulk Pricing:',
+      'Loading...': 'Loading...',
+      'Product not found': 'Product not found',
+    },
+    fr: {
+      'First Name': 'Prénom',
+      'Last Name': 'Nom',
+      'Phone': 'Téléphone',
+      'Email (optional)': 'Email (optionnel)',
+      'Select Wilaya': 'Sélectionnez la Wilaya',
+      'Select Baladia': 'Sélectionnez la Baladia',
+      'House': 'Maison',
+      'Checkout': 'Commander',
+      'Place Order': 'Passer la commande',
+      'Order placed successfully!': 'Commande passée avec succès !',
+      'Order failed': 'Échec de la commande',
+      'Bulk Pricing:': 'Tarifs de gros :',
+      'Loading...': 'Chargement...',
+      'Product not found': 'Produit non trouvé',
+    },
+    ar: {
+      'First Name': 'الاسم الأول',
+      'Last Name': 'اللقب',
+      'Phone': 'الهاتف',
+      'Email (optional)': 'البريد الإلكتروني (اختياري)',
+      'Select Wilaya': 'اختر الولاية',
+      'Select Baladia': 'اختر البلدية',
+      'House': 'منزل',
+      'Checkout': 'الدفع',
+      'Place Order': 'تأكيد الطلب',
+      'Order placed successfully!': 'تم تقديم الطلب بنجاح!',
+      'Order failed': 'فشل الطلب',
+      'Bulk Pricing:': 'أسعار الجملة:',
+      'Loading...': 'جاري التحميل...',
+      'Product not found': 'المنتج غير موجود',
+    },
+  };
+  return translations[lang]?.[key] || key;
+};
+
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -50,6 +105,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [wilayas, setWilayas] = useState<Wilaya[]>([])
   const [baladias, setBaladias] = useState<Baladia[]>([])
   const [filteredBaladias, setFilteredBaladias] = useState<Baladia[]>([])
+  const { lang } = useContext(LanguageContext);
 
   useEffect(() => {
     setLoading(true)
@@ -138,8 +194,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center">{t('Loading...', lang)}</div>
+  if (!product) return <div className="min-h-screen flex items-center justify-center">{t('Product not found', lang)}</div>
 
   return (
     <div className="min-h-screen bg-white">
@@ -258,19 +314,19 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
                 onClick={() => setShowCheckout(true)}
               >
-                Checkout
+                {t('Checkout', lang)}
               </Button>
             )}
             {/* Checkout Form */}
             {showCheckout && (
               <form className="space-y-5 bg-white p-6 rounded-2xl shadow-lg border max-w-lg mx-auto" onSubmit={handleCheckout}>
-                <input name="firstName" required placeholder="First Name" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.firstName} onChange={handleOrderFieldChange} />
-                <input name="lastName" required placeholder="Last Name" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.lastName} onChange={handleOrderFieldChange} />
-                <input name="phone" required placeholder="Phone" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.phone} onChange={handleOrderFieldChange} />
-                <input name="email" type="email" placeholder="Email (optional)" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.email} onChange={handleOrderFieldChange} />
+                <input name="firstName" required placeholder={t('First Name', lang)} className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.firstName} onChange={handleOrderFieldChange} />
+                <input name="lastName" required placeholder={t('Last Name', lang)} className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.lastName} onChange={handleOrderFieldChange} />
+                <input name="phone" required placeholder={t('Phone', lang)} className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.phone} onChange={handleOrderFieldChange} />
+                <input name="email" type="email" placeholder={t('Email (optional)', lang)} className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.email} onChange={handleOrderFieldChange} />
                 <Select value={orderFields.wilayaId} onValueChange={val => setOrderFields(f => ({ ...f, wilayaId: val, baladia: '' }))}>
                   <SelectTrigger className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition">
-                    <SelectValue placeholder="Select Wilaya" />
+                    <SelectValue placeholder={t('Select Wilaya', lang)} />
                   </SelectTrigger>
                   <SelectContent>
                     {wilayas.map(w => (
@@ -280,7 +336,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </Select>
                 <Select value={orderFields.baladia} onValueChange={val => setOrderFields(f => ({ ...f, baladia: val }))} disabled={!orderFields.wilayaId}>
                   <SelectTrigger className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" disabled={!orderFields.wilayaId}>
-                    <SelectValue placeholder="Select Baladia" />
+                    <SelectValue placeholder={t('Select Baladia', lang)} />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredBaladias.map(b => (
@@ -290,7 +346,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </Select>
                 <label className="flex items-center space-x-3 mt-2">
                   <input type="checkbox" name="house" checked={orderFields.house} onChange={handleOrderFieldChange} className="h-5 w-5 accent-[#9AE66E] border-gray-400 rounded focus:ring-2 focus:ring-[#9AE66E]" />
-                  <span className="text-gray-700 font-inter text-base">House</span>
+                  <span className="text-gray-700 font-inter text-base">{t('House', lang)}</span>
                 </label>
                 <Button
                   type="submit"
@@ -298,10 +354,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
                   disabled={orderLoading}
                 >
-                  {orderLoading ? "Placing Order..." : "Place Order"}
+                  {orderLoading ? "Placing Order..." : t('Place Order', lang)}
                 </Button>
-                {orderError && <div className="text-red-600 text-center">{orderError}</div>}
-                {orderSuccess && <div className="text-green-600 text-center">{orderSuccess}</div>}
+                {orderError && <div className="text-red-600 text-center">{t(orderError, lang)}</div>}
+                {orderSuccess && <div className="text-green-600 text-center">{t(orderSuccess, lang)}</div>}
               </form>
             )}
           </div>
