@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
       data: {
         firstName,
         lastName,
-        address,
+       
         phone,
         email,
         total,

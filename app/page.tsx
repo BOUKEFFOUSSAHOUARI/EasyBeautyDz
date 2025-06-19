@@ -1,10 +1,23 @@
+"use client"
 import Image from "next/image"
-import Link from "next/link"
-import { Search, User, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/footer"
 
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  imageUrl?: string;
+}
+
 export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    fetch('/api/shope?page=1')
+      .then(res => res.json())
+      .then(data => setProducts(data.products ? data.products.slice(0, 3) : []));
+  }, []);
   return (
     <div className="min-h-screen bg-white overflow-x-hidden w-full">
 
@@ -31,19 +44,6 @@ export default function HomePage() {
           <div className="w-12 h-1 bg-white/40"></div>
           <div className="w-12 h-1 bg-white/40"></div>
         </div>
-
-        {/* Slide counter */}
-        <div className="absolute bottom-8 right-8 text-white">
-          <span className="text-lg font-inter">01/03</span>
-          <div className="flex space-x-2 mt-2">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </section>
 
       {/* Featured Collection */}
@@ -55,94 +55,30 @@ export default function HomePage() {
               <p className="text-gray-600 text-lg mb-8 font-inter">
                 Explore our top picks in this featured collection. Find the perfect gift or treat yourself!
               </p>
-              <Button className="bg-black text-white hover:bg-gray-800 px-8 py-3 rounded-full font-inter">
-                View more
-              </Button>
             </div>
-
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full max-w-full">
-              <div className="group cursor-pointer">
-                <div className="aspect-[4/5] bg-[#C4B5A0] rounded-2xl overflow-hidden mb-4">
-                  <Image
-                    src="/placeholder.svg?height=300&width=300"
-                    alt="3 Plant Bundle"
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+              {products.map((product) => (
+                <div key={product.id} className="group cursor-pointer">
+                  <div className="aspect-[4/5] rounded-2xl overflow-hidden mb-4 flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <Image
+                        src={product.imageUrl}
+                        alt={product.title}
+                        width={300}
+                        height={300}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-white">
+                        <span className="text-white font-bold text-2xl">No Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1 font-clash">{product.title}</h3>
+                  <p className="text-gray-600 font-medium font-inter">${product.price.toFixed(2)}</p>
                 </div>
-                <h3 className="font-semibold text-lg mb-1 font-clash">3 Plant Bundle</h3>
-                <p className="text-gray-600 font-medium font-inter">$342.00</p>
-              </div>
-
-              <div className="group cursor-pointer">
-                <div className="aspect-[4/5] bg-[#C4B5A0] rounded-2xl overflow-hidden mb-4">
-                  <Image
-                    src="/placeholder.svg?height=300&width=300"
-                    alt="The Planter by Rustic Roots"
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-semibold text-lg mb-1 font-clash">The Planter by Rustic Roots</h3>
-                <p className="text-gray-500 text-sm mb-1 font-inter">Rustic Roots</p>
-                <p className="text-gray-600 font-medium font-inter">$55.00</p>
-              </div>
-
-              <div className="group cursor-pointer col-span-2 lg:col-span-1">
-                <div className="aspect-[4/5] bg-[#C4B5A0] rounded-2xl overflow-hidden mb-4">
-                  <Image
-                    src="/placeholder.svg?height=300&width=300"
-                    alt="The Cylinder by Modern Botany"
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-semibold text-lg mb-1 font-clash">The Cylinder by Modern Botany</h3>
-                <p className="text-gray-500 text-sm mb-1 font-inter">Modern Botany</p>
-                <p className="text-gray-600 font-medium font-inter">$35.00</p>
-              </div>
+              ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* New Arrivals */}
-      <section className="py-12 md:py-16 px-2 md:px-6 bg-gray-50 w-full max-w-full">
-        <div className="max-w-7xl mx-auto w-full max-w-full">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-2 md:gap-0 w-full max-w-full">
-            <div>
-              <h2 className="text-4xl font-bold text-black mb-2 font-clash">New arrivals</h2>
-              <p className="text-gray-600 font-inter">Our latest products are here. Check out what's new in store.</p>
-            </div>
-            <Link href="/shop" className="text-black font-medium hover:underline font-inter">
-              See all
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 w-full max-w-full">
-            {[
-              { name: "ZZ Plant", price: "$45.00" },
-              { name: "Spray Bottle", price: "$15.00" },
-              { name: "Snake Plant", price: "$38.00" },
-              { name: "Succulent", price: "$22.00" },
-            ].map((product, index) => (
-              <div key={index} className="group cursor-pointer">
-                <div className="aspect-[4/5] bg-[#C4B5A0] rounded-2xl overflow-hidden mb-4">
-                  <Image
-                    src="/placeholder.svg?height=300&width=300"
-                    alt={product.name}
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-semibold text-lg mb-1 font-clash">{product.name}</h3>
-                <p className="text-gray-600 font-medium font-inter">{product.price}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>

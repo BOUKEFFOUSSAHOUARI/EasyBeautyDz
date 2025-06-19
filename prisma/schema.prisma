@@ -67,7 +67,7 @@ model Order {
   id        String      @id @default(cuid())
   firstName String
   lastName  String
-  address   String
+  
   phone     String
   email     String?     // Optional email
   status    OrderStatus @default(PENDING)

@@ -1,15 +1,145 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Search, User, ShoppingBag, Minus, Plus, Heart, Star, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/footer"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+interface Product {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  price: number;
+  productPriceForQty?: { qty: number; price: number }[];
+}
+
+interface Wilaya {
+  id: string;
+  name: string;
+  wilaya_number: number;
+}
+
+interface Baladia {
+  name: string;
+  ar_name?: string;
+  wilaya_id: string;
+}
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [orderFields, setOrderFields] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    wilayaId: '',
+    baladia: '',
+    house: false,
+  })
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState("")
+  const [orderError, setOrderError] = useState("")
+  const [wilayas, setWilayas] = useState<Wilaya[]>([])
+  const [baladias, setBaladias] = useState<Baladia[]>([])
+  const [filteredBaladias, setFilteredBaladias] = useState<Baladia[]>([])
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`/api/shope/${params.id}`)
+      .then(res => res.json())
+      .then(data => setProduct(data))
+      .finally(() => setLoading(false))
+  }, [params.id])
+
+  // Fetch wilayas
+  useEffect(() => {
+    fetch('/api/main/wilayas')
+      .then(res => res.json())
+      .then(data => setWilayas(data.wilayas || []));
+  }, []);
+
+  // Fetch all baladias once
+  useEffect(() => {
+    fetch('/shipping/filtered_output_baladia.json')
+      .then(res => res.json())
+      .then(data => setBaladias(data));
+  }, []);
+
+  // Filter baladias when wilayaId changes
+  useEffect(() => {
+    const selectedWilaya = wilayas.find(w => w.id === orderFields.wilayaId);
+    if (selectedWilaya) {
+      setFilteredBaladias(baladias.filter(b => String(b.wilaya_id) === String(selectedWilaya.wilaya_number)));
+    } else {
+      setFilteredBaladias([]);
+    }
+  }, [orderFields.wilayaId, wilayas, baladias]);
+
+  function getCurrentPrice() {
+    if (!product) return 0
+    if (product.productPriceForQty && Array.isArray(product.productPriceForQty)) {
+      // Find the best price for the current quantity
+      const sorted = [...product.productPriceForQty].sort((a, b) => a.qty - b.qty)
+      let price = product.price
+      for (let i = 0; i < sorted.length; i++) {
+        if (quantity >= sorted[i].qty) {
+          price = sorted[i].price
+        }
+      }
+      return price
+    }
+    return product.price
+  }
+
+  const handleOrderFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    let fieldValue: string | boolean = value;
+    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
+      fieldValue = e.target.checked;
+    }
+    setOrderFields(prev => ({
+      ...prev,
+      [name]: fieldValue,
+    }));
+  };
+
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setOrderLoading(true)
+    setOrderError("")
+    setOrderSuccess("")
+    try {
+      const res = await fetch("/api/main/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...orderFields,
+          orderItems: [{ productId: product?.id, quantity, price: getCurrentPrice() }],
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setOrderSuccess("Order placed successfully!")
+      } else {
+        setOrderError(data.error || "Order failed")
+      }
+    } catch (err) {
+      setOrderError("Order failed")
+    } finally {
+      setOrderLoading(false)
+    }
+  }
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>
 
   return (
     <div className="min-h-screen bg-white">
@@ -58,134 +188,122 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </nav>
       </div>
 
-      {/* Navigation */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b">
-        <Link href="/" className="text-2xl font-bold text-black border-2 border-black px-3 py-1 font-clash">
-          Planted
-        </Link>
-
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link href="/shop" className="text-gray-800 hover:text-black font-medium font-inter">
-            Shop All
-          </Link>
-          <Link href="/plants" className="text-gray-800 hover:text-black font-medium font-inter">
-            Plants
-          </Link>
-          <Link href="/accessories" className="text-gray-800 hover:text-black font-medium font-inter">
-            Accessories
-          </Link>
-        </nav>
-
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden md:flex">
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden md:flex">
-            <User className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden md:flex">
-            <ShoppingBag className="h-5 w-5" />
-          </Button>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="flex space-x-4">
-              <div className="flex flex-col space-y-4">
-                <div className="w-20 h-20 bg-[#C4B5A0] rounded-lg overflow-hidden cursor-pointer">
-                  <Image
-                    src="/placeholder.svg?height=80&width=80"
-                    alt="Spray bottle thumbnail"
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-20 h-20 bg-[#C4B5A0] rounded-lg overflow-hidden cursor-pointer opacity-60">
-                  <Image
-                    src="/placeholder.svg?height=80&width=80"
-                    alt="Plant thumbnail"
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <div className="flex-1 aspect-square bg-[#C4B5A0] rounded-lg overflow-hidden">
+            <div className="flex-1 aspect-square bg-[#C4B5A0] rounded-lg overflow-hidden flex items-center justify-center">
+              {product.imageUrl ? (
                 <Image
-                  src="/placeholder.svg?height=600&width=600"
-                  alt="Spray Bottle"
+                  src={product.imageUrl}
+                  alt={product.title}
                   width={600}
                   height={600}
                   className="w-full h-full object-cover"
                 />
-              </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-white">
+                  <span className="text-white font-bold text-2xl">No Image</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-gray-500 uppercase tracking-wide mb-2 font-inter">PLANTED</p>
-              <h1 className="text-4xl font-bold text-black mb-4 font-clash">Spray Bottle</h1>
-
-              {/* Rating */}
-              <div className="flex items-center space-x-2 mb-6">
-                <div className="flex space-x-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-5 h-5 text-gray-300" />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-500 font-inter">0</span>
-              </div>
-
-              <p className="text-3xl font-bold text-black mb-8 font-inter">$15.00</p>
-            </div>
-
-            {/* Quantity and Add to Cart */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
+              <h1 className="text-4xl font-bold text-black mb-4 font-clash">{product.title}</h1>
+              <p className="text-gray-600 leading-relaxed font-inter mb-4">{product.description}</p>
+              {/* Price and Quantity */}
+              <div className="flex items-center space-x-4 mb-4">
                 <div className="flex items-center border rounded-lg">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="h-12 w-12"
+                    className="h-12 w-12 text-black bg-white hover:bg-[#9AE66E] active:bg-[#9AE66E] focus:bg-[#9AE66E] transition-colors"
+                    style={{ boxShadow: 'none' }}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-4 w-4 text-black" />
                   </Button>
-                  <span className="px-4 py-2 min-w-[60px] text-center font-inter">{quantity}</span>
-                  <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-12 w-12">
-                    <Plus className="h-4 w-4" />
+                  <span className="px-4 py-2 min-w-[60px] text-center font-inter text-black font-semibold text-lg">{quantity}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="h-12 w-12 text-black bg-white hover:bg-[#9AE66E] active:bg-[#9AE66E] focus:bg-[#9AE66E] transition-colors"
+                    style={{ boxShadow: 'none' }}
+                  >
+                    <Plus className="h-4 w-4 text-black" />
                   </Button>
                 </div>
-
-                <Button className="flex-1 bg-[#9AE66E] hover:bg-[#8BD65A] text-black font-medium h-12 rounded-full font-inter">
-                  Add to cart
-                </Button>
-
-                <Button variant="ghost" size="icon" className="h-12 w-12">
-                  <Heart className="h-5 w-5" />
-                </Button>
+                <span className="text-3xl font-bold text-black font-inter">${getCurrentPrice()}</span>
               </div>
+              {/* Show price tiers if available */}
+              {product.productPriceForQty && Array.isArray(product.productPriceForQty) && product.productPriceForQty.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">Bulk Pricing:</h3>
+                  <ul className="list-disc pl-6">
+                    {product.productPriceForQty.map((tier, idx) => (
+                      <li key={idx} className="text-gray-700">{tier.qty}+ : ${tier.price}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-
-            {/* Product Description */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-black font-clash">Planted Spray Bottle</h2>
-              <p className="text-gray-600 leading-relaxed font-inter">
-                Imagine stepping into your own personal greenhouse, the air thick with the scent of fresh earth and
-                vibrant greenery. As you tend to your leafy companions, misting them with care and precision, you become
-                part of a ritual that connects you to nature's rhythm. Our spray bottle isn't just a tool—it's your
-                gateway to creating that perfect environment where plants thrive and your green thumb truly shines.
-              </p>
-            </div>
+            {/* Checkout Button */}
+            {!showCheckout && (
+              <Button
+                className={`h-12 rounded-full font-inter w-full border-2 transition font-semibold ${quantity > 1 ? 'bg-white text-black border-black hover:bg-gray-50' : 'bg-[#9AE66E] hover:bg-[#8BD65A] text-black border-[#9AE66E]'}`}
+                style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
+                onClick={() => setShowCheckout(true)}
+              >
+                Checkout
+              </Button>
+            )}
+            {/* Checkout Form */}
+            {showCheckout && (
+              <form className="space-y-5 bg-white p-6 rounded-2xl shadow-lg border max-w-lg mx-auto" onSubmit={handleCheckout}>
+                <input name="firstName" required placeholder="First Name" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.firstName} onChange={handleOrderFieldChange} />
+                <input name="lastName" required placeholder="Last Name" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.lastName} onChange={handleOrderFieldChange} />
+                <input name="phone" required placeholder="Phone" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.phone} onChange={handleOrderFieldChange} />
+                <input name="email" type="email" placeholder="Email (optional)" className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" value={orderFields.email} onChange={handleOrderFieldChange} />
+                <Select value={orderFields.wilayaId} onValueChange={val => setOrderFields(f => ({ ...f, wilayaId: val, baladia: '' }))}>
+                  <SelectTrigger className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition">
+                    <SelectValue placeholder="Select Wilaya" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wilayas.map(w => (
+                      <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={orderFields.baladia} onValueChange={val => setOrderFields(f => ({ ...f, baladia: val }))} disabled={!orderFields.wilayaId}>
+                  <SelectTrigger className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" disabled={!orderFields.wilayaId}>
+                    <SelectValue placeholder="Select Baladia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredBaladias.map(b => (
+                      <SelectItem key={b.name} value={b.name}>{b.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <label className="flex items-center space-x-3 mt-2">
+                  <input type="checkbox" name="house" checked={orderFields.house} onChange={handleOrderFieldChange} className="h-5 w-5 accent-[#9AE66E] border-gray-400 rounded focus:ring-2 focus:ring-[#9AE66E]" />
+                  <span className="text-gray-700 font-inter text-base">House</span>
+                </label>
+                <Button
+                  type="submit"
+                  className={`h-12 rounded-full font-inter w-full border-2 transition font-semibold ${quantity > 1 ? 'bg-white text-black border-black hover:bg-gray-50' : 'bg-[#9AE66E] hover:bg-[#8BD65A] text-black border-[#9AE66E]'}`}
+                  style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
+                  disabled={orderLoading}
+                >
+                  {orderLoading ? "Placing Order..." : "Place Order"}
+                </Button>
+                {orderError && <div className="text-red-600 text-center">{orderError}</div>}
+                {orderSuccess && <div className="text-green-600 text-center">{orderSuccess}</div>}
+              </form>
+            )}
           </div>
         </div>
       </div>

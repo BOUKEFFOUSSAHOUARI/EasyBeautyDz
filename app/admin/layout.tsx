@@ -44,7 +44,7 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white w-full overflow-x-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -53,20 +53,20 @@ export default function AdminLayout({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm",
+          "fixed inset-y-0 left-0 z-50 w-64 max-w-full bg-white border-r border-gray-100 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b border-gray-100">
           <Link href="/admin" className="text-xl font-semibold text-green-600">
             Planted Admin
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 text-black" />
           </Button>
         </div>
 
-        <nav className="mt-6 px-3">
+        <nav className="mt-6 px-2 sm:px-3">
           <div className="space-y-1">
             {sidebarItems.map((item) => {
               const Icon = item.icon
@@ -77,7 +77,7 @@ export default function AdminLayout({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
                     isActive
                       ? "bg-green-50 text-green-700 border-r-2 border-green-600"
                       : "text-gray-600 hover:bg-gray-50 hover:text-green-600",
@@ -94,16 +94,16 @@ export default function AdminLayout({
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 w-full">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-100 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-100 bg-white px-2 sm:px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6 text-black" />
           </Button>
         </div>
 
         {/* Page content */}
-        <main className="py-6 px-4 sm:px-6 lg:px-8">
+        <main className="py-4 px-2 sm:px-4 md:px-6 lg:px-8 w-full max-w-full overflow-x-auto">
           {children}
         </main>
       </div>
