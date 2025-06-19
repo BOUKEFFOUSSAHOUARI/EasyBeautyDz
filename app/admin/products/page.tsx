@@ -66,6 +66,7 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [productPriceForQty, setProductPriceForQty] = useState<{ qty: string; price: string }[]>([])
+  const [viewProduct, setViewProduct] = useState<ProductType | null>(null)
 
   useEffect(() => {
     fetchProducts()
@@ -174,6 +175,7 @@ export default function ProductsPage() {
   }
 
   const handleEditClick = (product: ProductType) => {
+    setViewProduct(null);
     setEditingId(product.id)
     setNewProduct({
       title: product.title,
@@ -410,14 +412,6 @@ export default function ProductsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="isActivated"
-                  checked={newProduct.isActivated}
-                  onCheckedChange={(checked) => setNewProduct(f => ({ ...f, isActivated: checked }))}
-                />
-                <Label htmlFor="isActivated" className="text-green-600 font-bold">Product is activated</Label>
-              </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
                 {productPriceForQty.map((item, idx) => (
@@ -571,14 +565,6 @@ export default function ProductsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="editIsActivated"
-                  checked={newProduct.isActivated}
-                  onCheckedChange={(checked) => setNewProduct(f => ({ ...f, isActivated: checked }))}
-                />
-                <Label htmlFor="editIsActivated" className="text-green-600 font-bold">Product is activated</Label>
-              </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
                 {productPriceForQty.map((item, idx) => (
@@ -658,13 +644,15 @@ export default function ProductsPage() {
                     <th className="px-6 py-3">SKU</th>
                     <th className="px-6 py-3">Price</th>
                     <th className="px-6 py-3">Quantity</th>
-                    <th className="px-6 py-3">Status</th>
                     <th className="px-6 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {products.map((product) => (
-                    <tr key={product.id} className="bg-white">
+                    <tr key={product.id} className="bg-white group cursor-pointer" onClick={e => {
+                      if ((e.target as HTMLElement).closest('.action-btn')) return;
+                      setViewProduct(product);
+                    }}>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                         <div className="flex items-center space-x-3">
                           {product.imageUrl && (
@@ -676,57 +664,21 @@ export default function ProductsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-900">{product.sku || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900">{product.price.toLocaleString()} DA</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900">{product.quantity !== undefined ? product.quantity : 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            product.isActivated
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {product.isActivated ? "Active" : "Inactive"}
-                        </span>
-                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-black group-hover:text-black">{product.price.toLocaleString()} DA</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-black group-hover:text-black">{product.quantity !== undefined ? product.quantity : 'N/A'}</td>
                       <td className="px-6 py-4 flex items-center gap-2">
                         <button
-                          className="text-gray-700 hover:text-green-600 hover:bg-green-50 p-2 rounded-md transition-colors"
-                          onClick={() => handleEditClick(product)}
+                          className="action-btn text-gray-700 hover:text-green-600 hover:bg-green-50 p-2 rounded-md transition-colors"
+                          onClick={e => { e.stopPropagation(); handleEditClick(product); }}
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          className="text-gray-700 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors"
-                          onClick={() => {
-                            setDeleteId(product.id)
-                            setIsDeleteDialogOpen(true)
-                          }}
+                          className="action-btn text-gray-700 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors"
+                          onClick={e => { e.stopPropagation(); setDeleteId(product.id); setIsDeleteDialogOpen(true); }}
                         >
                           <Trash className="h-4 w-4" />
                         </button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50"><Plus className="h-4 w-4" /></Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-white max-w-xs">
-                            <DialogHeader>
-                              <DialogTitle>Quantity-based Pricing</DialogTitle>
-                            </DialogHeader>
-                            {product.productPriceForQty && product.productPriceForQty.length > 0 ? (
-                              <table className="w-full text-sm mt-2">
-                                <thead>
-                                  <tr><th>Qty</th><th>Price/one</th></tr>
-                                </thead>
-                                <tbody>
-                                  {product.productPriceForQty.map((p, i) => (
-                                    <tr key={i}><td>{p.qty}</td><td>{p.price}</td></tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            ) : <div className="text-gray-500">No special pricing</div>}
-                          </DialogContent>
-                        </Dialog>
                       </td>
                     </tr>
                   ))}
@@ -778,6 +730,60 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Product View Dialog */}
+      <Dialog open={!!viewProduct} onOpenChange={() => setViewProduct(null)}>
+        <DialogContent className="bg-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Product Details</DialogTitle>
+          </DialogHeader>
+          <button
+            aria-label="Close"
+            onClick={() => setViewProduct(null)}
+            className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            ×
+          </button>
+          {viewProduct && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-4">
+                {viewProduct.imageUrl && (
+                  <Image src={viewProduct.imageUrl} alt={viewProduct.title} width={80} height={80} className="rounded" />
+                )}
+                <div>
+                  <div className="font-bold text-lg text-black">{viewProduct.title}</div>
+                  <div className="text-gray-600">SKU: {viewProduct.sku || 'N/A'}</div>
+                </div>
+              </div>
+              <div className="text-black">Description: {viewProduct.description}</div>
+              <div className="text-black">Price: {viewProduct.price} DA</div>
+              <div className="text-black">Quantity: {viewProduct.quantity}</div>
+              {viewProduct.productPriceForQty && viewProduct.productPriceForQty.length > 0 && (
+                <div>
+                  <div className="font-semibold text-black mb-1">Quantity-based Pricing:</div>
+                  <table className="w-full text-sm mt-2 border border-gray-200 rounded">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="text-black px-3 py-1 text-left">Qty</th>
+                        <th className="text-black px-3 py-1 text-left">Price/one (DA)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewProduct.productPriceForQty.map((p, i) => (
+                        <tr key={i} className="border-t border-gray-100">
+                          <td className="text-black px-3 py-1">{p.qty}</td>
+                          <td className="text-black px-3 py-1">{p.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -39,6 +39,8 @@ interface OrderType {
     name: string
     deliveryPrice: number
   }
+  baladia?: string
+  house?: boolean
 }
 
 interface ProductType {
@@ -77,6 +79,7 @@ export default function OrdersPage() {
   })
   const [baladias, setBaladias] = useState<{ name: string; ar_name: string; wilaya_id: string }[]>([])
   const [baladiaData, setBaladiaData] = useState<any[]>([])
+  const [viewOrder, setViewOrder] = useState<OrderType | null>(null)
 
   useEffect(() => {
     fetchOrders()
@@ -500,13 +503,13 @@ export default function OrdersPage() {
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={order.id} className="bg-white group cursor-pointer" onClick={() => setViewOrder(order)}>
                     <td className="py-3 px-4 font-medium text-gray-900">#{order.id.slice(-4)}</td>
                     <td className="py-3 px-4 text-gray-600">{order.firstName} {order.lastName}</td>
                     <td className="py-3 px-4 text-gray-600">
                       {order.orderItems.map(item => `${item.product.title} (${item.quantity})`).join(", ")}
                     </td>
-                    <td className="py-3 px-4 font-medium text-gray-900">${order.total.toFixed(2)}</td>
+                    <td className="py-3 px-4 font-semibold text-gray-900">{order.total.toLocaleString()} DA</td>
                     <td className="py-3 px-4">
                       <Select
                         value={order.status}
@@ -531,7 +534,10 @@ export default function OrdersPage() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteOrder(order.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOrder(order.id);
+                        }}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -564,6 +570,54 @@ export default function OrdersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Order View Dialog */}
+      <Dialog open={!!viewOrder} onOpenChange={() => setViewOrder(null)}>
+        <DialogContent className="bg-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          <button
+            aria-label="Close"
+            onClick={() => setViewOrder(null)}
+            className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            ×
+          </button>
+          {viewOrder && (
+            <div className="space-y-2">
+              <div className="font-bold text-lg text-black">{viewOrder.firstName} {viewOrder.lastName}</div>
+              <div className="text-black">Phone: {viewOrder.phone}</div>
+              <div className="text-black">Address: {viewOrder.address}</div>
+              {viewOrder.wilaya && <div className="text-black">Wilaya: {viewOrder.wilaya.name}</div>}
+              {viewOrder.baladia && <div className="text-black">Baladia: {viewOrder.baladia}</div>}
+              <div className="text-black">Delivery: {viewOrder.house ? 'House' : 'Agency Office'}</div>
+              <div className="text-black">Status: {viewOrder.status}</div>
+              <div className="text-black">Total: {viewOrder.total} DA</div>
+              <div className="font-semibold text-black mt-2">Products:</div>
+              <table className="w-full text-sm mt-2 border border-gray-200 rounded">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-black px-3 py-1 text-left font-bold">Title</th>
+                    <th className="text-black px-3 py-1 text-left font-bold">Qty</th>
+                    <th className="text-black px-3 py-1 text-left font-bold">Price (DA)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewOrder.orderItems.map((item, i) => (
+                    <tr key={i} className="border-t border-gray-100">
+                      <td className="text-black px-3 py-1">{item.product.title}</td>
+                      <td className="text-black px-3 py-1">{item.quantity}</td>
+                      <td className="text-black px-3 py-1">{item.price} DA</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

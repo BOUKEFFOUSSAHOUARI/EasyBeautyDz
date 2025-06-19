@@ -6,10 +6,10 @@ import Footer from "@/components/footer"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden w-full">
 
       {/* Hero Section */}
-      <section className="relative h-[600px] bg-[#D4C4B0] overflow-hidden">
+      <section className="relative h-[400px] md:h-[600px] bg-[#D4C4B0] overflow-hidden w-full max-w-full">
         <Image src="/plant-hero.jpg" alt="Fresh plants for every occasion" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute left-8 top-1/2 -translate-y-1/2 text-white max-w-lg">
@@ -47,9 +47,9 @@ export default function HomePage() {
       </section>
 
       {/* Featured Collection */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-5 gap-8 items-center">
+      <section className="py-12 md:py-16 px-2 md:px-6 bg-white w-full max-w-full">
+        <div className="max-w-7xl mx-auto w-full max-w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 items-center w-full max-w-full">
             <div className="lg:col-span-2">
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6 font-clash">Featured collection</h2>
               <p className="text-gray-600 text-lg mb-8 font-inter">
@@ -60,7 +60,7 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full max-w-full">
               <div className="group cursor-pointer">
                 <div className="aspect-[4/5] bg-[#C4B5A0] rounded-2xl overflow-hidden mb-4">
                   <Image
@@ -110,9 +110,9 @@ export default function HomePage() {
       </section>
 
       {/* New Arrivals */}
-      <section className="py-16 px-6 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
+      <section className="py-12 md:py-16 px-2 md:px-6 bg-gray-50 w-full max-w-full">
+        <div className="max-w-7xl mx-auto w-full max-w-full">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-2 md:gap-0 w-full max-w-full">
             <div>
               <h2 className="text-4xl font-bold text-black mb-2 font-clash">New arrivals</h2>
               <p className="text-gray-600 font-inter">Our latest products are here. Check out what's new in store.</p>
@@ -122,7 +122,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 w-full max-w-full">
             {[
               { name: "ZZ Plant", price: "$45.00" },
               { name: "Spray Bottle", price: "$15.00" },
