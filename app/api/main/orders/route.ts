@@ -1,0 +1,199 @@
+// app/api/orders/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { getUserFromToken } from '@/lib/auth';
+
+const prisma = new PrismaClient();
+
+// Get all orders (Admin only)
+export async function GET(req: NextRequest) {
+  try {
+    const currentUser = await getUserFromToken(req);
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin access required.' },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
+    const status = searchParams.get('status');
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (status) where.status = status.toUpperCase();
+    
+    // Add search conditions
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } },
+        { id: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [orders, total, products] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          orderItems: {
+            include: {
+              product: {
+                select: { id: true, title: true, imageUrl: true }
+              }
+            }
+          },
+          wilaya: true
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.order.count({ where }),
+      prisma.product.findMany({ select: { id: true, title: true } })
+    ]);
+
+    return NextResponse.json({
+      orders,
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get orders error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Create new order
+export async function POST(req: NextRequest) {
+  try {
+    const {
+      firstName,
+      lastName,
+      address,
+      phone,
+      email,
+      wilayaId,
+      orderItems
+    } = await req.json();
+
+    // Validate required fields
+    if (!firstName || !lastName || !address || !phone || !orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Get current user (optional for guests)
+    const currentUser = await getUserFromToken(req);
+
+    // Calculate total and validate products
+    let total = 0;
+    const validatedItems = [];
+
+    for (const item of orderItems) {
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId }
+      });
+  console.log(product);
+      if (!product || !product.isActivated) {
+        return NextResponse.json(
+          { error: `Product ${item.productId} not found or inactive` },
+          { status: 400 }
+        );
+      }
+
+      if (product.quantity !== null && product.quantity < item.quantity) {
+        return NextResponse.json(
+          { error: `Insufficient stock for product ${product.title}` },
+          { status: 400 }
+        );
+      }
+
+      const itemTotal = product.price * item.quantity;
+      total += itemTotal;
+
+      validatedItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: product.price
+      });
+    }
+
+    // Add delivery cost if wilaya is specified
+    let deliveryPrice = 0;
+    if (wilayaId) {
+      const wilaya = await prisma.wilaya.findUnique({
+        where: { id: wilayaId }
+      });
+      if (wilaya) {
+        deliveryPrice = wilaya.deliveryPrice;
+        total += deliveryPrice;
+      }
+    }
+
+    // Create order with order items
+    const order = await prisma.order.create({
+      data: {
+        firstName,
+        lastName,
+        address,
+        phone,
+        email,
+        total,
+        wilayaId: wilayaId || null,
+        orderItems: {
+          create: validatedItems
+        }
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              select: { id: true, title: true, imageUrl: true }
+            }
+          }
+        },
+        wilaya: true
+      }
+    });
+
+    // Update product quantities
+    for (const item of validatedItems) {
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          quantity: {
+            decrement: item.quantity
+          }
+        }
+      });
+    }
+
+    return NextResponse.json({
+      message: 'Order created successfully',
+      order
+    }, { status: 201 });
+  } catch (error) {
+    console.error('Create order error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
