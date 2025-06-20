@@ -129,7 +129,7 @@ export default function ShopPage() {
                     </div>
                   )}
                   <h3 className="font-semibold text-lg mb-1 font-clash text-gray-700">{product.title}</h3>
-                  <p className="text-gray-600 font-medium font-inter">${product.price}</p>
+                  <p className="text-gray-600 font-medium font-inter">{product.price} DA</p>
                 </Link>
               </div>
             ))}

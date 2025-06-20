@@ -153,6 +153,18 @@ model Wilaya {
   @@map("wilayas")
 }
 
+model Cms {
+  id              String   @id @default(cuid())
+  heroTitle       String?
+  heroTitleColor  String?
+  
+  heroDescription String?
+  heroDescriptionColor String?
+  heroImage       String?
+
+  @@map("cms")
+}
+
 // Enums
 enum Role {
   EMPLOYEE

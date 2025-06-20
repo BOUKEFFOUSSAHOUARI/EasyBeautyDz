@@ -25,23 +25,35 @@ const t = (key: string, lang: string) => {
 export default function HomePage() {
   const { lang } = useContext(LanguageContext);
   const [products, setProducts] = useState<Product[]>([]);
+  const [cmsHero, setCmsHero] = useState<any>(null);
   useEffect(() => {
     fetch('/api/shope?page=1')
       .then(res => res.json())
       .then(data => setProducts(data.products ? data.products.slice(0, 3) : []));
+    fetch('/api/main/cms')
+      .then(res => res.json())
+      .then(data => setCmsHero(data.cms || null));
   }, []);
+
+  // Fallbacks
+  const heroBg = cmsHero?.heroImage || "/plant-hero.jpg";
+  const heroTitle = cmsHero?.heroTitle || t('Fresh finds for every occasion', lang);
+  const heroTitleColor = cmsHero?.heroTitleColor || "#fff";
+  const heroDesc = cmsHero?.heroDescription || t('Explore our latest arrivals, curated to bring you style, functionality, and inspiration. Shop now and discover your next favorite.', lang);
+  const heroDescColor = cmsHero?.heroDescriptionColor || "#fff";
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden w-full">
       {/* Hero Section - no header or language switcher */}
       <section className="relative h-[340px] md:h-[500px] bg-[#D4C4B0] overflow-hidden w-full max-w-full">
-        <Image src="/plant-hero.jpg" alt={t('Fresh finds for every occasion', lang)} fill className="object-cover" priority />
+        <Image src={heroBg} alt={heroTitle} fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute left-8 top-1/2 -translate-y-1/2 text-white max-w-lg">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6 font-clash">
-            {t('Fresh finds for every occasion', lang)}
+        <div className="absolute left-8 top-1/2 -translate-y-1/2 max-w-lg">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6 font-clash" style={{ color: heroTitleColor }}>
+            {heroTitle}
           </h1>
-          <p className="text-lg mb-8 opacity-90 font-inter">
-            {t('Explore our latest arrivals, curated to bring you style, functionality, and inspiration. Shop now and discover your next favorite.', lang)}
+          <p className="text-lg mb-8 opacity-90 font-inter" style={{ color: heroDescColor }}>
+            {heroDesc}
           </p>
           <Link href="/shop">
             <Button className="bg-white text-black hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium font-inter">
@@ -69,23 +81,25 @@ export default function HomePage() {
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full max-w-full">
               {products.map((product) => (
                 <div key={product.id} className="group cursor-pointer">
-                  <div className="aspect-[4/5] rounded-2xl overflow-hidden mb-4 flex items-center justify-center">
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.title}
-                        width={300}
-                        height={300}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-white">
-                        <span className="text-white font-bold text-2xl">No Image</span>
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-lg mb-1 font-clash">{product.title}</h3>
-                  <p className="text-gray-600 font-medium font-inter">${product.price.toFixed(2)}</p>
+                  <Link href={`/product/${product.id}`} className="block h-full w-full">
+                    <div className="aspect-[4/5] rounded-2xl overflow-hidden mb-4 flex items-center justify-center">
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.title}
+                          width={300}
+                          height={300}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-white">
+                          <span className="text-white font-bold text-2xl">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1 font-clash">{product.title}</h3>
+                    <p className="text-gray-600 font-medium font-inter">{product.price.toFixed(2)} DA</p>
+                  </Link>
                 </div>
               ))}
             </div>

@@ -293,7 +293,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     <Plus className="h-4 w-4 text-black" />
                   </Button>
                 </div>
-                <span className="text-3xl font-bold text-black font-inter">${getCurrentPrice()}</span>
+                <span className="text-3xl font-bold text-black font-inter">{getCurrentPrice()} DA</span>
               </div>
               {/* Show price tiers if available */}
               {product.productPriceForQty && Array.isArray(product.productPriceForQty) && product.productPriceForQty.length > 0 && (
@@ -301,7 +301,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   <h3 className="font-semibold mb-2">Bulk Pricing:</h3>
                   <ul className="list-disc pl-6">
                     {product.productPriceForQty.map((tier, idx) => (
-                      <li key={idx} className="text-gray-700">{tier.qty}+ : ${tier.price}</li>
+                      <li key={idx} className="text-gray-700">{tier.qty}+ : {tier.price} DA</li>
                     ))}
                   </ul>
                 </div>
