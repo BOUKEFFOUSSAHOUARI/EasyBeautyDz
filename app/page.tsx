@@ -23,7 +23,8 @@ const t = (key: string, lang: string) => {
 };
 
 export default function HomePage() {
-  const { lang } = useContext(LanguageContext);
+  const { lang: contextLang } = useContext(LanguageContext);
+  const lang = contextLang || 'ar';
   const [products, setProducts] = useState<Product[]>([]);
   const [cmsHero, setCmsHero] = useState<any>(null);
   useEffect(() => {

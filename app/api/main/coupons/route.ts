@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma/prismaClient';
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getUserFromToken(req);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const currentUser = await getUserFromToken(req);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }

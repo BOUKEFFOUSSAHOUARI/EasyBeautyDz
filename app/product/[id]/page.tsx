@@ -22,6 +22,7 @@ interface Wilaya {
   id: string;
   name: string;
   wilaya_number: number;
+  deliveryPrice: number;
 }
 
 interface Baladia {
@@ -47,6 +48,10 @@ const t = (key: string, lang: string) => {
       'Bulk Pricing:': 'Bulk Pricing:',
       'Loading...': 'Loading...',
       'Product not found': 'Product not found',
+      'for each item': 'for each item',
+      'Total': 'Total',
+      'Total cost': 'Total cost',
+      'Shipping': 'Shipping',
     },
     fr: {
       'First Name': 'Prénom',
@@ -63,6 +68,10 @@ const t = (key: string, lang: string) => {
       'Bulk Pricing:': 'Tarifs de gros :',
       'Loading...': 'Chargement...',
       'Product not found': 'Produit non trouvé',
+      'for each item': 'par article',
+      'Total': 'Total',
+      'Total cost': 'Coût total',
+      'Shipping': 'Livraison',
     },
     ar: {
       'First Name': 'الاسم الأول',
@@ -79,6 +88,10 @@ const t = (key: string, lang: string) => {
       'Bulk Pricing:': 'أسعار الجملة:',
       'Loading...': 'جاري التحميل...',
       'Product not found': 'المنتج غير موجود',
+      'for each item': 'لكل قطعة',
+      'Total': 'المجموع',
+      'Total cost': 'التكلفة الإجمالية',
+      'Shipping': 'الشحن',
     },
   };
   return translations[lang]?.[key] || key;
@@ -105,7 +118,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [wilayas, setWilayas] = useState<Wilaya[]>([])
   const [baladias, setBaladias] = useState<Baladia[]>([])
   const [filteredBaladias, setFilteredBaladias] = useState<Baladia[]>([])
-  const { lang } = useContext(LanguageContext);
+  const { lang: contextLang } = useContext(LanguageContext);
+  const lang = contextLang || 'ar';
+  const [coupon, setCoupon] = useState("");
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [shipping, setShipping] = useState<number | null>(null);
+  const [totalCost, setTotalCost] = useState<number | null>(null);
+  const [couponApplied, setCouponApplied] = useState<boolean>(false);
+  const [couponSuccessMessage, setCouponSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true)
@@ -138,6 +158,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       setFilteredBaladias([]);
     }
   }, [orderFields.wilayaId, wilayas, baladias]);
+
+  // Fetch shipping price when wilaya changes
+  useEffect(() => {
+    if (orderFields.wilayaId) {
+      const wilaya = wilayas.find(w => w.id === orderFields.wilayaId);
+      setShipping(wilaya ? wilaya.deliveryPrice : null);
+    } else {
+      setShipping(null);
+    }
+    // eslint-disable-next-line
+  }, [orderFields.wilayaId, wilayas]);
 
   function getCurrentPrice() {
     if (!product) return 0
@@ -172,6 +203,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     setOrderLoading(true)
     setOrderError("")
     setOrderSuccess("")
+    setCouponMessage(null)
+    setCouponApplied(false)
+    setCouponSuccessMessage(null)
     try {
       const res = await fetch("/api/main/orders", {
         method: "POST",
@@ -179,13 +213,30 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         body: JSON.stringify({
           ...orderFields,
           orderItems: [{ productId: product?.id, quantity, price: getCurrentPrice() }],
+          couponCode: quantity === 1 ? coupon : undefined
         }),
       })
       const data = await res.json()
+      if (data.couponMessage) {
+        setCouponMessage(data.couponMessage[lang] || data.couponMessage.en)
+      } else {
+        setCouponMessage(null)
+      }
+      if (data.couponApplied && data.couponSuccessMessage) {
+        setCouponApplied(true);
+        setCouponSuccessMessage(data.couponSuccessMessage[lang] || data.couponSuccessMessage.en);
+      } else {
+        setCouponApplied(false);
+        setCouponSuccessMessage(null);
+      }
       if (res.ok) {
         setOrderSuccess("Order placed successfully!")
+        setShipping(data.deliveryPrice ?? null)
+        setTotalCost(data.totalCost ?? null)
       } else {
         setOrderError(data.error || "Order failed")
+        setShipping(null)
+        setTotalCost(null)
       }
     } catch (err) {
       setOrderError("Order failed")
@@ -293,8 +344,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     <Plus className="h-4 w-4 text-black" />
                   </Button>
                 </div>
-                <span className="text-3xl font-bold text-black font-inter">{getCurrentPrice()} DA</span>
+                <span className="text-xl font-semibold text-black font-inter">{getCurrentPrice()} DA <span className="text-base font-normal">{t('for each item', lang)}</span></span>
               </div>
+              {/* Total price */}
+              <div className="mb-2 text-lg font-bold text-green-700 font-inter">{t('Total', lang)}: {getCurrentPrice() * quantity} DA</div>
               {/* Show price tiers if available */}
               {product.productPriceForQty && Array.isArray(product.productPriceForQty) && product.productPriceForQty.length > 0 && (
                 <div className="mb-4">
@@ -334,6 +387,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     ))}
                   </SelectContent>
                 </Select>
+                {/* Show shipping cost immediately after wilaya selection */}
+                {orderFields.wilayaId && shipping !== null && (
+                  <div className="text-green-700 font-inter text-base mt-1 mb-2">{t('Shipping', lang)}: {shipping} DA</div>
+                )}
                 <Select value={orderFields.baladia} onValueChange={val => setOrderFields(f => ({ ...f, baladia: val }))} disabled={!orderFields.wilayaId}>
                   <SelectTrigger className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition" disabled={!orderFields.wilayaId}>
                     <SelectValue placeholder={t('Select Baladia', lang)} />
@@ -348,16 +405,63 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   <input type="checkbox" name="house" checked={orderFields.house} onChange={handleOrderFieldChange} className="h-5 w-5 accent-[#9AE66E] border-gray-400 rounded focus:ring-2 focus:ring-[#9AE66E]" />
                   <span className="text-gray-700 font-inter text-base">{t('House', lang)}</span>
                 </label>
+                {/* Coupon input, only if quantity is 1 */}
+                <div className="space-y-2">
+                  <label className="block text-gray-700 font-inter text-base">Coupon</label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 p-3 rounded-lg bg-white text-black font-inter text-base focus:outline-none focus:ring-2 focus:ring-[#9AE66E] transition"
+                    value={coupon}
+                    onChange={e => setCoupon(e.target.value)}
+                    placeholder={lang === 'fr' ? 'Entrez le code du coupon' : lang === 'ar' ? 'أدخل رمز القسيمة' : 'Enter coupon code'}
+                    disabled={quantity !== 1}
+                  />
+                  {quantity !== 1 && (
+                    <div className="text-red-600 text-sm mt-1">
+                      {lang === 'fr' ? 'Le coupon ne peut être utilisé que pour une seule quantité.' : lang === 'ar' ? 'يمكن استخدام القسيمة لكمية واحدة فقط.' : 'Coupon can only be used for a single quantity.'}
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="submit"
-                  className={`h-12 rounded-full font-inter w-full border-2 transition font-semibold ${quantity > 1 ? 'bg-white text-black border-black hover:bg-gray-50' : 'bg-[#9AE66E] hover:bg-[#8BD65A] text-black border-[#9AE66E]'}`}
-                  style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
+                  className="h-12 rounded-full font-inter w-full border-2 transition font-semibold bg-green-600 hover:bg-green-700 text-white border-green-600"
                   disabled={orderLoading}
                 >
-                  {orderLoading ? "Placing Order..." : t('Place Order', lang)}
+                  {orderLoading ? (lang === 'fr' ? 'Traitement...' : lang === 'ar' ? 'جاري المعالجة...' : 'Placing Order...') : t('Place Order', lang)}
                 </Button>
-                {orderError && <div className="text-red-600 text-center">{t(orderError, lang)}</div>}
-                {orderSuccess && <div className="text-green-600 text-center">{t(orderSuccess, lang)}</div>}
+                {/* Show coupon/order messages at the bottom, persistent */}
+                {(couponMessage || couponApplied || orderError || orderSuccess) && (
+                  <div className={`mt-4 text-center font-inter text-base ${orderError ? 'text-red-600' : orderSuccess ? 'text-green-600' : couponApplied ? 'text-green-600' : (couponMessage && !couponApplied) ? 'text-red-600' : 'text-yellow-700'}`}>
+                    {orderError ? (
+                      lang === 'fr' ? 'Échec de la commande' : lang === 'ar' ? 'فشل الطلب' : orderError
+                    ) : (
+                      <>
+                        {/* Show coupon error/info if not applied (always show above success) */}
+                        {couponMessage && !couponApplied && (
+                          <div className="mb-2">{couponMessage}</div>
+                        )}
+                        {/* Show coupon success message if applied */}
+                        {couponApplied && couponSuccessMessage && (
+                          <div className="mb-2">{couponSuccessMessage}</div>
+                        )}
+                        {/* Show order success message if order placed */}
+                        {orderSuccess && (
+                          <>
+                            {lang === 'fr' ? 'Commande passée avec succès !' : lang === 'ar' ? 'تم تقديم الطلب بنجاح!' : orderSuccess}
+                            {totalCost !== null && (
+                              <div className="mt-2">
+                                {t('Total cost', lang)}: {totalCost} DA
+                                {shipping !== null && shipping > 0 && (
+                                  <span className="block">{t('Shipping', lang)}: {shipping} DA</span>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </form>
             )}
           </div>

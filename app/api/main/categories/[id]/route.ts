@@ -11,7 +11,7 @@ export async function PUT(
 ) {
   try {
     const currentUser = await getUserFromToken(req);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }
@@ -79,7 +79,7 @@ export async function DELETE(
 ) {
   try {
     const currentUser = await getUserFromToken(req);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }

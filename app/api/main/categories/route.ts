@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   try {
     const currentUser = await getUserFromToken(req);
     console.log(currentUser);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }

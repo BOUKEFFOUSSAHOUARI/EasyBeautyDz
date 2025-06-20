@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma/prismaClient';
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getUserFromToken(req);
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if (!currentUser ) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }
@@ -84,13 +84,13 @@ export async function POST(req: NextRequest) {
     const {
       firstName,
       lastName,
-    
       phone,
       email,
       wilayaId,
       orderItems,
       baladia,
-      house
+      house,
+      couponCode
     } = await req.json();
 
     // Validate required fields
@@ -108,6 +108,69 @@ export async function POST(req: NextRequest) {
     let total = 0;
     const validatedItems = [];
 
+    // Coupon logic
+    let couponMessage = null;
+    let couponDiscount = 0;
+    let couponId = null;
+    let couponApplied = false;
+    let couponSuccessMessage = null;
+    if (couponCode) {
+      if (!orderItems || !Array.isArray(orderItems) || orderItems.length !== 1 || orderItems[0].quantity !== 1) {
+        couponMessage = {
+          en: 'Coupon can only be used for a single quantity.',
+          fr: 'Le coupon ne peut être utilisé que pour une seule quantité.',
+          ar: 'يمكن استخدام القسيمة لكمية واحدة فقط.'
+        };
+      } else {
+        // Check coupon existence and validity
+        const coupon = await prisma.coupon.findUnique({
+          where: { code: couponCode.toUpperCase() },
+          include: { products: true }
+        });
+        if (!coupon) {
+          couponMessage = {
+            en: 'Coupon not found.',
+            fr: 'Coupon introuvable.',
+            ar: 'القسيمة غير موجودة.'
+          };
+        } else if (!coupon.isActive) {
+          couponMessage = {
+            en: 'Coupon is not active.',
+            fr: 'Le coupon n\'est pas actif.',
+            ar: 'القسيمة غير مفعلة.'
+          };
+        } else if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+          couponMessage = {
+            en: 'Coupon has expired.',
+            fr: 'Le coupon a expiré.',
+            ar: 'انتهت صلاحية القسيمة.'
+          };
+        } else if (coupon.maxUsage !== null && coupon.usedCount >= coupon.maxUsage) {
+          couponMessage = {
+            en: 'Coupon usage limit reached.',
+            fr: 'Limite d\'utilisation du coupon atteinte.',
+            ar: 'تم الوصول إلى الحد الأقصى لاستخدام القسيمة.'
+          };
+        } else if (!coupon.products.some(p => p.productId === orderItems[0].productId)) {
+          couponMessage = {
+            en: 'Coupon is not valid for this product.',
+            fr: 'Le coupon n\'est pas valable pour ce produit.',
+            ar: 'القسيمة غير صالحة لهذا المنتج.'
+          };
+        } else {
+          // Valid coupon
+          couponDiscount = coupon.discount;
+          couponId = coupon.id;
+          couponApplied = true;
+          couponSuccessMessage = {
+            en: 'Coupon applied successfully!',
+            fr: 'Coupon appliqué avec succès !',
+            ar: 'تم تطبيق القسيمة بنجاح!'
+          };
+        }
+      }
+    }
+
     for (const item of orderItems) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId }
@@ -118,14 +181,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-
       if (product.quantity !== null && product.quantity < item.quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for product ${product.title}` },
           { status: 400 }
         );
       }
-
       // Determine price based on productPriceForQty
       let unitPrice = product.price;
       if (product.productPriceForQty && Array.isArray(product.productPriceForQty)) {
@@ -144,10 +205,12 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-
+      // Apply coupon discount if valid and this is the couponed item
+      if (couponDiscount > 0 && orderItems.length === 1 && item.quantity === 1 && couponId) {
+        unitPrice = Math.max(0, unitPrice - couponDiscount);
+      }
       const itemTotal = unitPrice * item.quantity;
       total += itemTotal;
-
       validatedItems.push({
         productId: item.productId,
         quantity: item.quantity,
@@ -172,7 +235,6 @@ export async function POST(req: NextRequest) {
       data: {
         firstName,
         lastName,
-       
         phone,
         email,
         total,
@@ -195,6 +257,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // If coupon was used and valid, increment usedCount
+    if (couponId && couponDiscount > 0 && !couponMessage) {
+      await prisma.coupon.update({
+        where: { id: couponId },
+        data: { usedCount: { increment: 1 } }
+      });
+    }
+
     // Update product quantities
     for (const item of validatedItems) {
       await prisma.product.update({
@@ -209,7 +279,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: 'Order created successfully',
-      order
+      order,
+      couponMessage,
+      couponApplied,
+      couponSuccessMessage,
+      deliveryPrice,
+      totalCost: total
     }, { status: 201 });
   } catch (error) {
     console.error('Create order error:', error);
