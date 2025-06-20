@@ -104,20 +104,24 @@ model OrderItem {
 }
 
 model Coupon {
-  id          String @id @default(cuid())
-  code        String @unique
-  discount    Int    // Percentage discount (e.g., 50 for 50%)
-  isActive    Boolean @default(true)
+  id          String   @id @default(cuid())
+  code        String   @unique
+  discount    Float      // Percentage discount (e.g., 50 for 50%)
+  isActive    Boolean  @default(true)
   expiresAt   DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  maxUsage    Int?     // Total allowed usage (null = unlimited)
+  usedCount   Int      @default(0) // How many times the coupon has been used
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  products ProductCoupon[]
+  products    ProductCoupon[]
 
   @@map("coupons")
 }
+
 
 model ProductCoupon {
   id String @id @default(cuid())

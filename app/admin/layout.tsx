@@ -36,14 +36,14 @@ const sidebarItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
-const LanguageContext = createContext({ lang: 'en', setLang: (l: string) => {} });
+export const LanguageContext = createContext({ lang: 'en', setLang: (l: string) => {} });
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean | 'lang'>(false)
   const [lang, setLang] = useState('en');
   const pathname = usePathname()
   const isArabic = false; // Always keep sidebar on the left

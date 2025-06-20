@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LanguageContext } from "../layout";
 
 interface ProductType {
   id: string
@@ -67,6 +68,171 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [productPriceForQty, setProductPriceForQty] = useState<{ qty: string; price: string }[]>([])
   const [viewProduct, setViewProduct] = useState<ProductType | null>(null)
+  const { lang } = useContext(LanguageContext);
+
+  const translations = {
+    en: {
+      productManagement: "Product Management",
+      manageCatalog: "Manage your product catalog",
+      addProduct: "Add Product",
+      addNewProduct: "Add New Product",
+      productName: "Product Name",
+      enterProductName: "Enter product name",
+      skuOptional: "SKU (Optional)",
+      enterSKU: "Enter SKU",
+      description: "Description",
+      enterDescription: "Enter product description",
+      price: "Price (DA)",
+      quantity: "Quantity",
+      category: "Category",
+      selectCategory: "Select a category",
+      productImage: "Product Image",
+      quantityBasedPricing: "Quantity-based Pricing",
+      qty: "Qty",
+      pricePerOne: "Price per one",
+      remove: "Remove",
+      addQtyPrice: "Add Qty/Price",
+      cancel: "Cancel",
+      adding: "Adding...",
+      add: "Add Product",
+      editProduct: "Edit Product",
+      updating: "Updating...",
+      update: "Update Product",
+      searchProducts: "Search products...",
+      products: "Products",
+      total: "total",
+      loading: "Loading...",
+      noProductsFound: "No products found",
+      noProductsAdded: "No products added yet",
+      product: "Product",
+      priceCol: "Price",
+      actions: "Actions",
+      areYouSure: "Are you sure?",
+      deleteWarning: "This will permanently delete this product. This action cannot be undone.",
+      delete: "Delete",
+      productDetails: "Product Details",
+      sku: "SKU",
+      descriptionCol: "Description",
+      priceDetail: "Price",
+      quantityDetail: "Quantity",
+      quantityBasedPricingDetail: "Quantity-based Pricing:",
+      qtyCol: "Qty",
+      pricePerOneCol: "Price/one (DA)",
+      previous: "Previous",
+      next: "Next",
+      page: "Page",
+      of: "of",
+      nA: "N/A",
+    },
+    ar: {
+      productManagement: "إدارة المنتجات",
+      manageCatalog: "إدارة كتالوج المنتجات",
+      addProduct: "إضافة منتج",
+      addNewProduct: "إضافة منتج جديد",
+      productName: "اسم المنتج",
+      enterProductName: "أدخل اسم المنتج",
+      skuOptional: "رمز المنتج (اختياري)",
+      enterSKU: "أدخل رمز المنتج",
+      description: "الوصف",
+      enterDescription: "أدخل وصف المنتج",
+      price: "السعر (دج)",
+      quantity: "الكمية",
+      category: "الفئة",
+      selectCategory: "اختر فئة",
+      productImage: "صورة المنتج",
+      quantityBasedPricing: "تسعير حسب الكمية",
+      qty: "الكمية",
+      pricePerOne: "سعر الوحدة",
+      remove: "إزالة",
+      addQtyPrice: "إضافة كمية/سعر",
+      cancel: "إلغاء",
+      adding: "جاري الإضافة...",
+      add: "إضافة المنتج",
+      editProduct: "تعديل المنتج",
+      updating: "جاري التحديث...",
+      update: "تحديث المنتج",
+      searchProducts: "ابحث عن المنتجات...",
+      products: "المنتجات",
+      total: "الإجمالي",
+      loading: "جاري التحميل...",
+      noProductsFound: "لم يتم العثور على منتجات",
+      noProductsAdded: "لم تتم إضافة منتجات بعد",
+      product: "المنتج",
+      priceCol: "السعر",
+      actions: "الإجراءات",
+      areYouSure: "هل أنت متأكد؟",
+      deleteWarning: "سيتم حذف هذا المنتج نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      delete: "حذف",
+      productDetails: "تفاصيل المنتج",
+      sku: "رمز المنتج",
+      descriptionCol: "الوصف",
+      priceDetail: "السعر",
+      quantityDetail: "الكمية",
+      quantityBasedPricingDetail: "تسعير حسب الكمية:",
+      qtyCol: "الكمية",
+      pricePerOneCol: "سعر الوحدة (دج)",
+      previous: "السابق",
+      next: "التالي",
+      page: "صفحة",
+      of: "من",
+      nA: "غير متوفر",
+    },
+    fr: {
+      productManagement: "Gestion des produits",
+      manageCatalog: "Gérer votre catalogue de produits",
+      addProduct: "Ajouter un produit",
+      addNewProduct: "Ajouter un nouveau produit",
+      productName: "Nom du produit",
+      enterProductName: "Entrez le nom du produit",
+      skuOptional: "SKU (Optionnel)",
+      enterSKU: "Entrez le SKU",
+      description: "Description",
+      enterDescription: "Entrez la description du produit",
+      price: "Prix (DA)",
+      quantity: "Quantité",
+      category: "Catégorie",
+      selectCategory: "Sélectionnez une catégorie",
+      productImage: "Image du produit",
+      quantityBasedPricing: "Tarification par quantité",
+      qty: "Qté",
+      pricePerOne: "Prix unitaire",
+      remove: "Supprimer",
+      addQtyPrice: "Ajouter Qté/Prix",
+      cancel: "Annuler",
+      adding: "Ajout...",
+      add: "Ajouter le produit",
+      editProduct: "Modifier le produit",
+      updating: "Mise à jour...",
+      update: "Mettre à jour le produit",
+      searchProducts: "Rechercher des produits...",
+      products: "Produits",
+      total: "total",
+      loading: "Chargement...",
+      noProductsFound: "Aucun produit trouvé",
+      noProductsAdded: "Aucun produit ajouté pour le moment",
+      product: "Produit",
+      priceCol: "Prix",
+      actions: "Actions",
+      areYouSure: "Êtes-vous sûr ?",
+      deleteWarning: "Ce produit sera supprimé définitivement. Cette action est irréversible.",
+      delete: "Supprimer",
+      productDetails: "Détails du produit",
+      sku: "SKU",
+      descriptionCol: "Description",
+      priceDetail: "Prix",
+      quantityDetail: "Quantité",
+      quantityBasedPricingDetail: "Tarification par quantité :",
+      qtyCol: "Qté",
+      pricePerOneCol: "Prix/unité (DA)",
+      previous: "Précédent",
+      next: "Suivant",
+      page: "Page",
+      of: "de",
+      nA: "N/A",
+    },
+  } as const;
+  type Lang = keyof typeof translations;
+  const t = translations[lang as Lang] || translations.en;
 
   useEffect(() => {
     fetchProducts()
@@ -292,26 +458,26 @@ export default function ProductsPage() {
       <Toaster />
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Product Management</h1>
-          <p className="mt-2 text-gray-500">Manage your product catalog</p>
+          <h1 className="text-3xl font-semibold text-gray-900">{t.productManagement}</h1>
+          <p className="mt-2 text-gray-500">{t.manageCatalog}</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-green-500 hover:bg-green-600 text-white rounded-md">
               <Plus className="mr-2 h-4 w-4" />
-              Add Product
+              {t.addProduct}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white sm:max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-medium text-gray-900">Add New Product</DialogTitle>
+              <DialogTitle className="text-lg font-medium text-gray-900">{t.addNewProduct}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddProduct} className="grid gap-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Product Name</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.productName}</Label>
                   <Input
-                    placeholder="Enter product name"
+                    placeholder={t.enterProductName}
                     className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                     value={newProduct.title}
                     onChange={(e) => setNewProduct(f => ({ ...f, title: e.target.value }))}
@@ -319,9 +485,9 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">SKU (Optional)</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.skuOptional}</Label>
                   <Input
-                    placeholder="Enter SKU"
+                    placeholder={t.enterSKU}
                     className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                     value={newProduct.sku}
                     onChange={(e) => setNewProduct(f => ({ ...f, sku: e.target.value }))}
@@ -329,9 +495,9 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Description</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.description}</Label>
                 <Textarea
-                  placeholder="Enter product description"
+                  placeholder={t.enterDescription}
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct(f => ({ ...f, description: e.target.value }))}
@@ -339,7 +505,7 @@ export default function ProductsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Price (DA)</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.price}</Label>
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -350,7 +516,7 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Quantity</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.quantity}</Label>
                   <Input
                     type="number"
                     placeholder="0"
@@ -361,14 +527,14 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Category</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.category}</Label>
                 <Select
                   value={newProduct.categoryId}
                   onValueChange={(value) => setNewProduct(f => ({ ...f, categoryId: value }))}
                   required
                 >
                   <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-black placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a category" className="text-black" />
+                    <SelectValue placeholder={t.selectCategory} className="text-black" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     {categories.map(category => (
@@ -380,7 +546,7 @@ export default function ProductsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Product Image</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.productImage}</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -413,13 +579,13 @@ export default function ProductsPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.quantityBasedPricing}</Label>
                 {productPriceForQty.map((item, idx) => (
                   <div key={idx} className="flex gap-2 items-center mb-2">
                     <Input
                       type="number"
                       min="1"
-                      placeholder="Qty"
+                      placeholder={t.qty}
                       value={item.qty}
                       onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, qty: e.target.value } : el))}
                       className="w-24 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
@@ -427,26 +593,26 @@ export default function ProductsPage() {
                     <Input
                       type="number"
                       min="0"
-                      placeholder="Price per one"
+                      placeholder={t.pricePerOne}
                       value={item.price}
                       onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, price: e.target.value } : el))}
                       className="w-32 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
                     />
                     <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => arr.filter((_, i) => i !== idx))} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
-                      Remove
+                      {t.remove}
                     </Button>
                   </div>
                 ))}
                 <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => [...arr, { qty: '', price: '' }])} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
-                  Add Qty/Price
+                  {t.addQtyPrice}
                 </Button>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
-                  Cancel
+                  {t.cancel}
                 </Button>
                 <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
-                  {isLoading ? "Adding..." : "Add Product"}
+                  {isLoading ? t.adding : t.add}
                 </Button>
               </div>
             </form>
@@ -457,14 +623,14 @@ export default function ProductsPage() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="bg-white sm:max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg font-medium text-gray-900">Edit Product</DialogTitle>
+              <DialogTitle className="text-lg font-medium text-gray-900">{t.editProduct}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateProduct} className="grid gap-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Product Name</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.productName}</Label>
                   <Input
-                    placeholder="Enter product name"
+                    placeholder={t.enterProductName}
                     className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                     value={newProduct.title}
                     onChange={(e) => setNewProduct(f => ({ ...f, title: e.target.value }))}
@@ -472,9 +638,9 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">SKU (Optional)</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.skuOptional}</Label>
                   <Input
-                    placeholder="Enter SKU"
+                    placeholder={t.enterSKU}
                     className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                     value={newProduct.sku}
                     onChange={(e) => setNewProduct(f => ({ ...f, sku: e.target.value }))}
@@ -482,9 +648,9 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Description</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.description}</Label>
                 <Textarea
-                  placeholder="Enter product description"
+                  placeholder={t.enterDescription}
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct(f => ({ ...f, description: e.target.value }))}
@@ -492,7 +658,7 @@ export default function ProductsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Price (DA)</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.price}</Label>
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -503,7 +669,7 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Quantity</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.quantity}</Label>
                   <Input
                     type="number"
                     placeholder="0"
@@ -514,14 +680,14 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Category</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.category}</Label>
                 <Select
                   value={newProduct.categoryId}
                   onValueChange={(value) => setNewProduct(f => ({ ...f, categoryId: value }))}
                   required
                 >
                   <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-black placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a category" className="text-black" />
+                    <SelectValue placeholder={t.selectCategory} className="text-black" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     {categories.map(category => (
@@ -533,7 +699,7 @@ export default function ProductsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Product Image</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.productImage}</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -566,13 +732,13 @@ export default function ProductsPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Quantity-based Pricing</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.quantityBasedPricing}</Label>
                 {productPriceForQty.map((item, idx) => (
                   <div key={idx} className="flex gap-2 items-center mb-2">
                     <Input
                       type="number"
                       min="1"
-                      placeholder="Qty"
+                      placeholder={t.qty}
                       value={item.qty}
                       onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, qty: e.target.value } : el))}
                       className="w-24 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
@@ -580,26 +746,26 @@ export default function ProductsPage() {
                     <Input
                       type="number"
                       min="0"
-                      placeholder="Price per one"
+                      placeholder={t.pricePerOne}
                       value={item.price}
                       onChange={e => setProductPriceForQty(arr => arr.map((el, i) => i === idx ? { ...el, price: e.target.value } : el))}
                       className="w-32 bg-gray-50 text-black border border-gray-300 focus:ring-1 focus:ring-green-200 placeholder:text-gray-400"
                     />
                     <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => arr.filter((_, i) => i !== idx))} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
-                      Remove
+                      {t.remove}
                     </Button>
                   </div>
                 ))}
                 <Button type="button" variant="outline" onClick={() => setProductPriceForQty(arr => [...arr, { qty: '', price: '' }])} className="mt-1 bg-gray-50 text-black border border-gray-300 hover:bg-green-50">
-                  Add Qty/Price
+                  {t.addQtyPrice}
                 </Button>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
-                  Cancel
+                  {t.cancel}
                 </Button>
                 <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Update Product"}
+                  {isLoading ? t.updating : t.update}
                 </Button>
               </div>
             </form>
@@ -611,7 +777,7 @@ export default function ProductsPage() {
       <div className="relative w-full mb-6">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
-          placeholder="Search products..."
+          placeholder={t.searchProducts}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-500"
@@ -623,28 +789,28 @@ export default function ProductsPage() {
         <CardHeader className="py-4 px-6 bg-white border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-2">
-              <CardTitle className="text-xl font-semibold text-gray-900">Products</CardTitle>
-              <span className="text-sm text-gray-500">({products.length} total)</span>
+              <CardTitle className="text-xl font-semibold text-gray-900">{t.products}</CardTitle>
+              <span className="text-sm text-gray-500">({products.length} {t.total})</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0 bg-white">
           {isLoading ? (
-            <div className="p-6 text-center text-sm text-gray-500 bg-white">Loading...</div>
+            <div className="p-6 text-center text-sm text-gray-500 bg-white">{t.loading}</div>
           ) : products.length === 0 ? (
             <div className="p-6 text-center text-sm text-gray-500 bg-white">
-              {searchTerm ? "No products found" : "No products added yet"}
+              {searchTerm ? t.noProductsFound : t.noProductsAdded}
             </div>
           ) : (
             <div className="relative overflow-x-auto border border-gray-200 rounded-lg">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                   <tr>
-                    <th className="px-6 py-3">Product</th>
-                    <th className="px-6 py-3">SKU</th>
-                    <th className="px-6 py-3">Price</th>
-                    <th className="px-6 py-3">Quantity</th>
-                    <th className="px-6 py-3">Actions</th>
+                    <th className="px-6 py-3">{t.product}</th>
+                    <th className="px-6 py-3">{t.sku}</th>
+                    <th className="px-6 py-3">{t.priceCol}</th>
+                    <th className="px-6 py-3">{t.quantity}</th>
+                    <th className="px-6 py-3">{t.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -663,9 +829,9 @@ export default function ProductsPage() {
                           <span>{product.title}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900">{product.sku || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-900">{product.sku || t.nA}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-black group-hover:text-black">{product.price.toLocaleString()} DA</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-black group-hover:text-black">{product.quantity !== undefined ? product.quantity : 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-black group-hover:text-black">{product.quantity !== undefined ? product.quantity : t.nA}</td>
                       <td className="px-6 py-4 flex items-center gap-2">
                         <button
                           className="action-btn text-gray-700 hover:text-green-600 hover:bg-green-50 p-2 rounded-md transition-colors"
@@ -696,17 +862,17 @@ export default function ProductsPage() {
           onClick={() => setPage(p => Math.max(1, p - 1))}
           disabled={page === 1}
         >
-          Previous
+          {t.previous}
         </Button>
         <span className="py-2 px-4 text-gray-600">
-          Page {page} of {totalPages}
+          {t.page} {page} {t.of} {totalPages}
         </span>
         <Button
           variant="outline"
           onClick={() => setPage(p => Math.min(totalPages, p + 1))}
           disabled={page === totalPages}
         >
-          Next
+          {t.next}
         </Button>
       </div>
 
@@ -714,18 +880,18 @@ export default function ProductsPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t.areYouSure}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this product. This action cannot be undone.
+              {t.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500 text-white hover:bg-red-600"
               onClick={handleDeleteProduct}
             >
-              Delete
+              {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -735,10 +901,10 @@ export default function ProductsPage() {
       <Dialog open={!!viewProduct} onOpenChange={() => setViewProduct(null)}>
         <DialogContent className="bg-white max-w-lg">
           <DialogHeader>
-            <DialogTitle>Product Details</DialogTitle>
+            <DialogTitle>{t.productDetails}</DialogTitle>
           </DialogHeader>
           <button
-            aria-label="Close"
+            aria-label={t.cancel}
             onClick={() => setViewProduct(null)}
             className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl"
             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
@@ -753,20 +919,20 @@ export default function ProductsPage() {
                 )}
                 <div>
                   <div className="font-bold text-lg text-black">{viewProduct.title}</div>
-                  <div className="text-gray-600">SKU: {viewProduct.sku || 'N/A'}</div>
+                  <div className="text-gray-600">{t.sku}: {viewProduct.sku || t.nA}</div>
                 </div>
               </div>
-              <div className="text-black">Description: {viewProduct.description}</div>
-              <div className="text-black">Price: {viewProduct.price} DA</div>
-              <div className="text-black">Quantity: {viewProduct.quantity}</div>
+              <div className="text-black">{t.descriptionCol}: {viewProduct.description}</div>
+              <div className="text-black">{t.priceCol}: {viewProduct.price.toLocaleString()} DA</div>
+              <div className="text-black">{t.quantity}: {viewProduct.quantity}</div>
               {viewProduct.productPriceForQty && viewProduct.productPriceForQty.length > 0 && (
                 <div>
-                  <div className="font-semibold text-black mb-1">Quantity-based Pricing:</div>
+                  <div className="font-semibold text-black mb-1">{t.quantityBasedPricingDetail}</div>
                   <table className="w-full text-sm mt-2 border border-gray-200 rounded">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="text-black px-3 py-1 text-left">Qty</th>
-                        <th className="text-black px-3 py-1 text-left">Price/one (DA)</th>
+                        <th className="text-black px-3 py-1 text-left">{t.qtyCol}</th>
+                        <th className="text-black px-3 py-1 text-left">{t.pricePerOneCol}</th>
                       </tr>
                     </thead>
                     <tbody>

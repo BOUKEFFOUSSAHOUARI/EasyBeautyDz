@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Get all coupons (Admin only)
 export async function GET(req: NextRequest) {
@@ -16,50 +16,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const isActive = searchParams.get('isActive');
-    const search = searchParams.get('search');
-    const skip = (page - 1) * limit;
-
-    const where: any = {};
-    
-    if (isActive !== null) {
-      where.isActive = isActive === 'true';
-    }
-    
-    if (search) {
-      where.code = { contains: search, mode: 'insensitive' };
-    }
-
-    const [coupons, total] = await Promise.all([
-      prisma.coupon.findMany({
-        where,
-        include: {
-          products: {
-            include: {
-              product: {
-                select: { id: true, title: true, imageUrl: true }
-              }
+    // Fetch all coupons with their related products (id, title)
+    const coupons = await prisma.coupon.findMany({
+      include: {
+        products: {
+          include: {
+            product: {
+              select: { id: true, title: true }
             }
           }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
-      }),
-      prisma.coupon.count({ where })
-    ]);
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Fetch all products (id, title)
+    const products = await prisma.product.findMany({
+      select: { id: true, title: true }
+    });
 
     return NextResponse.json({
       coupons,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
+      products
     });
   } catch (error) {
     console.error('Get coupons error:', error);
@@ -86,6 +64,7 @@ export async function POST(req: NextRequest) {
       discount,
       isActive,
       expiresAt,
+      maxUsage,
       productIds
     } = await req.json();
 
@@ -97,12 +76,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate discount percentage
-    if (discount < 0 || discount > 100) {
+    // Validate discount is a float
+    const discountValue = parseFloat(discount);
+    if (isNaN(discountValue)) {
       return NextResponse.json(
-        { error: 'Discount must be between 0 and 100' },
+        { error: 'Discount must be a number' },
         { status: 400 }
       );
+    }
+
+    // Validate maxUsage if provided
+    if (maxUsage !== undefined && maxUsage !== null) {
+      if (typeof maxUsage !== 'number' || maxUsage < 1) {
+        return NextResponse.json(
+          { error: 'maxUsage must be a positive number or null for unlimited usage' },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if coupon code already exists
@@ -117,10 +107,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate products if provided
+    // Validate products if provided and check price - discount > 0
     if (productIds && Array.isArray(productIds) && productIds.length > 0) {
       const products = await prisma.product.findMany({
-        where: { id: { in: productIds } }
+        where: { id: { in: productIds } },
+        select: { id: true, price: true }
       });
 
       if (products.length !== productIds.length) {
@@ -129,14 +120,27 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+
+      // Check price - discount > 0 for each product (fixed amount only)
+      for (const product of products) {
+        const finalPrice = product.price - discountValue;
+        if (finalPrice <= 0) {
+          return NextResponse.json(
+            { error: `Discount is too high for product ${product.id}. Final price must be greater than 0.` },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     const coupon = await prisma.coupon.create({
       data: {
         code: code.toUpperCase(),
-        discount: parseInt(discount),
+        discount: discountValue,
         isActive: isActive !== false,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
+        maxUsage: maxUsage || null,
+        usedCount: 0, // Initialize to 0 (though this is the default)
         products: productIds && productIds.length > 0 ? {
           create: productIds.map((productId: string) => ({
             productId

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LanguageContext } from "../layout";
 
 interface UserType {
   id: string
@@ -38,6 +39,114 @@ export default function UsersPage() {
   const [editingId, setEditingId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [isPasswordRequired, setIsPasswordRequired] = useState(true);
+  const { lang } = useContext(LanguageContext);
+
+  const translations = {
+    en: {
+      userManagement: "User Management",
+      manageUsers: "Manage admin users and their permissions",
+      addUser: "Add User",
+      addNewUser: "Add New User",
+      email: "Email",
+      enterEmail: "Enter email address",
+      password: "Password",
+      enterPassword: "Enter password",
+      passwordOptional: "Password (Optional)",
+      leaveBlank: "Leave blank to keep current password",
+      role: "Role",
+      selectRole: "Select a role",
+      admin: "Admin",
+      employee: "Employee",
+      cancel: "Cancel",
+      adding: "Adding...",
+      add: "Add User",
+      editUser: "Edit User",
+      updating: "Updating...",
+      update: "Update User",
+      searchUsers: "Search users...",
+      users: "Users",
+      total: "total",
+      loading: "Loading...",
+      noUsersFound: "No users found",
+      noUsersAdded: "No users added yet",
+      createdAt: "Created At",
+      updatedAt: "Updated At",
+      actions: "Actions",
+      areYouSure: "Are you sure?",
+      deleteWarning: "This will permanently delete this user. This action cannot be undone.",
+      delete: "Delete",
+    },
+    ar: {
+      userManagement: "إدارة المستخدمين",
+      manageUsers: "إدارة مستخدمي لوحة التحكم وصلاحياتهم",
+      addUser: "إضافة مستخدم",
+      addNewUser: "إضافة مستخدم جديد",
+      email: "البريد الإلكتروني",
+      enterEmail: "أدخل البريد الإلكتروني",
+      password: "كلمة المرور",
+      enterPassword: "أدخل كلمة المرور",
+      passwordOptional: "كلمة المرور (اختياري)",
+      leaveBlank: "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية",
+      role: "الدور",
+      selectRole: "اختر الدور",
+      admin: "مدير",
+      employee: "موظف",
+      cancel: "إلغاء",
+      adding: "جاري الإضافة...",
+      add: "إضافة المستخدم",
+      editUser: "تعديل المستخدم",
+      updating: "جاري التحديث...",
+      update: "تحديث المستخدم",
+      searchUsers: "ابحث عن المستخدمين...",
+      users: "المستخدمون",
+      total: "الإجمالي",
+      loading: "جاري التحميل...",
+      noUsersFound: "لم يتم العثور على مستخدمين",
+      noUsersAdded: "لم تتم إضافة مستخدمين بعد",
+      createdAt: "تاريخ الإنشاء",
+      updatedAt: "تاريخ التحديث",
+      actions: "الإجراءات",
+      areYouSure: "هل أنت متأكد؟",
+      deleteWarning: "سيتم حذف هذا المستخدم نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      delete: "حذف",
+    },
+    fr: {
+      userManagement: "Gestion des utilisateurs",
+      manageUsers: "Gérer les utilisateurs admin et leurs permissions",
+      addUser: "Ajouter un utilisateur",
+      addNewUser: "Ajouter un nouvel utilisateur",
+      email: "Email",
+      enterEmail: "Entrez l'adresse email",
+      password: "Mot de passe",
+      enterPassword: "Entrez le mot de passe",
+      passwordOptional: "Mot de passe (Optionnel)",
+      leaveBlank: "Laissez vide pour garder le mot de passe actuel",
+      role: "Rôle",
+      selectRole: "Sélectionnez un rôle",
+      admin: "Admin",
+      employee: "Employé",
+      cancel: "Annuler",
+      adding: "Ajout...",
+      add: "Ajouter l'utilisateur",
+      editUser: "Modifier l'utilisateur",
+      updating: "Mise à jour...",
+      update: "Mettre à jour l'utilisateur",
+      searchUsers: "Rechercher des utilisateurs...",
+      users: "Utilisateurs",
+      total: "total",
+      loading: "Chargement...",
+      noUsersFound: "Aucun utilisateur trouvé",
+      noUsersAdded: "Aucun utilisateur ajouté pour le moment",
+      createdAt: "Créé le",
+      updatedAt: "Mis à jour le",
+      actions: "Actions",
+      areYouSure: "Êtes-vous sûr ?",
+      deleteWarning: "Cet utilisateur sera supprimé définitivement. Cette action est irréversible.",
+      delete: "Supprimer",
+    },
+  } as const;
+  type Lang = keyof typeof translations;
+  const t = translations[lang as Lang] || translations.en;
 
   // Fetch users
   useEffect(() => {
@@ -183,65 +292,65 @@ export default function UsersPage() {
       <Toaster />
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">User Management</h1>
-          <p className="mt-2 text-gray-500">Manage admin users and their permissions</p>
+          <h1 className="text-3xl font-semibold text-gray-900">{t.userManagement}</h1>
+          <p className="mt-2 text-gray-500">{t.manageUsers}</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-green-500 hover:bg-green-600 text-white rounded-md">
               <Plus className="mr-2 h-4 w-4" />
-              Add User
+              {t.addUser}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg font-medium text-gray-900">Add New User</DialogTitle>
+              <DialogTitle className="text-lg font-medium text-gray-900">{t.addNewUser}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddUser} className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Email</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.email}</Label>
                 <Input
                   type="email"
                   value={newUser.email}
                   onChange={e => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter email address"
+                  placeholder={t.enterEmail}
                   required
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Password</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.password}</Label>
                 <Input
                   type="password"
                   value={newUser.password}
                   onChange={e => setNewUser(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter password"
+                  placeholder={t.enterPassword}
                   required={isPasswordRequired}
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Role</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.role}</Label>
                 <Select
                   value={newUser.role}
                   onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value }))}
                   required
                 >
                   <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={t.selectRole} />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="EMPLOYEE">Employee</SelectItem>
+                    <SelectItem value="ADMIN">{t.admin}</SelectItem>
+                    <SelectItem value="EMPLOYEE">{t.employee}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
-                  Cancel
+                  {t.cancel}
                 </Button>
                 <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
-                  {isLoading ? "Adding..." : "Add User"}
+                  {isLoading ? t.adding : t.add}
                 </Button>
               </div>
             </form>
@@ -252,53 +361,53 @@ export default function UsersPage() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="bg-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg font-medium text-gray-900">Edit User</DialogTitle>
+              <DialogTitle className="text-lg font-medium text-gray-900">{t.editUser}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleEditUser} className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Email</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.email}</Label>
                 <Input
                   type="email"
                   value={newUser.email}
                   onChange={e => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter email address"
+                  placeholder={t.enterEmail}
                   required
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Password (Optional)</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.passwordOptional}</Label>
                 <Input
                   type="password"
                   value={newUser.password}
                   onChange={e => setNewUser(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Leave blank to keep current password"
+                  placeholder={t.leaveBlank}
                   required={false}
                   className="bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Role</Label>
+                <Label className="text-sm font-medium text-gray-700">{t.role}</Label>
                 <Select
                   value={newUser.role}
                   onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value }))}
                   required
                 >
                   <SelectTrigger className="w-full bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-400">
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={t.selectRole} />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="EMPLOYEE">Employee</SelectItem>
+                    <SelectItem value="ADMIN">{t.admin}</SelectItem>
+                    <SelectItem value="EMPLOYEE">{t.employee}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} className="text-gray-700 hover:bg-gray-50">
-                  Cancel
+                  {t.cancel}
                 </Button>
                 <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Update User"}
+                  {isLoading ? t.updating : t.update}
                 </Button>
               </div>
             </form>
@@ -310,7 +419,7 @@ export default function UsersPage() {
       <div className="relative w-full mb-6">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
-          placeholder="Search users..."
+          placeholder={t.searchUsers}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 bg-gray-50 border border-gray-100 focus:ring-1 focus:ring-gray-200 text-gray-900 placeholder:text-gray-500"
@@ -322,28 +431,28 @@ export default function UsersPage() {
         <CardHeader className="py-4 px-6 bg-white border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-2">
-              <CardTitle className="text-xl font-semibold text-gray-900">Users</CardTitle>
-              <span className="text-sm text-gray-500">({filteredUsers.length} total)</span>
+              <CardTitle className="text-xl font-semibold text-gray-900">{t.users}</CardTitle>
+              <span className="text-sm text-gray-500">({filteredUsers.length} {t.total})</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0 bg-white">
           {isLoading ? (
-            <div className="p-6 text-center text-sm text-gray-500 bg-white">Loading...</div>
+            <div className="p-6 text-center text-sm text-gray-500 bg-white">{t.loading}</div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-6 text-center text-sm text-gray-500 bg-white">
-              {searchQuery ? "No users found" : "No users added yet"}
+              {searchQuery ? t.noUsersFound : t.noUsersAdded}
             </div>
           ) : (
             <div className="relative overflow-x-auto border border-gray-200 rounded-lg">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                   <tr>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Role</th>
-                    <th className="px-6 py-3">Created At</th>
-                    <th className="px-6 py-3">Updated At</th>
-                    <th className="px-6 py-3">Actions</th>
+                    <th className="px-6 py-3">{t.email}</th>
+                    <th className="px-6 py-3">{t.role}</th>
+                    <th className="px-6 py-3">{t.createdAt}</th>
+                    <th className="px-6 py-3">{t.updatedAt}</th>
+                    <th className="px-6 py-3">{t.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -393,9 +502,9 @@ export default function UsersPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t.areYouSure}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this user. This action cannot be undone.
+              {t.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -404,7 +513,7 @@ export default function UsersPage() {
               className="bg-red-500 text-white hover:bg-red-600"
               onClick={handleDeleteUser}
             >
-              Delete
+              {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

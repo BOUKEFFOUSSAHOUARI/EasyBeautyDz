@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         { lastName: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { address: { contains: search, mode: 'insensitive' } },
+        
         { id: { contains: search, mode: 'insensitive' } }
       ];
     }
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const {
       firstName,
       lastName,
-      address,
+    
       phone,
       email,
       wilayaId,
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     } = await req.json();
 
     // Validate required fields
-    if (!firstName || !lastName || !address || !phone || !orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+    if (!firstName || !lastName  || !phone || !orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }

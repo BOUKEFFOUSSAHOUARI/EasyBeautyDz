@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Save } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LanguageContext } from "../layout"
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -21,6 +22,73 @@ export default function SettingsPage() {
     maintenanceMode: false,
   })
 
+  const { lang } = useContext(LanguageContext)
+
+  const translations = {
+    en: {
+      settings: "Settings",
+      configure: "Configure your store settings and preferences",
+      generalSettings: "General Settings",
+      storeName: "Store Name",
+      storeEmail: "Store Email",
+      currency: "Currency",
+      timezone: "Timezone",
+      notifications: "Notifications",
+      emailNotifications: "Email Notifications",
+      receiveEmail: "Receive general email notifications",
+      orderNotifications: "Order Notifications",
+      getNotified: "Get notified when new orders are placed",
+      lowStockAlerts: "Low Stock Alerts",
+      alertLowStock: "Alert when products are running low",
+      system: "System",
+      maintenanceMode: "Maintenance Mode",
+      putStoreMaintenance: "Put your store in maintenance mode",
+      saveSettings: "Save Settings",
+    },
+    ar: {
+      settings: "الإعدادات",
+      configure: "قم بتكوين إعدادات متجرك وتفضيلاتك",
+      generalSettings: "الإعدادات العامة",
+      storeName: "اسم المتجر",
+      storeEmail: "البريد الإلكتروني للمتجر",
+      currency: "العملة",
+      timezone: "المنطقة الزمنية",
+      notifications: "الإشعارات",
+      emailNotifications: "إشعارات البريد الإلكتروني",
+      receiveEmail: "تلقي إشعارات البريد الإلكتروني العامة",
+      orderNotifications: "إشعارات الطلبات",
+      getNotified: "تلقي إشعار عند وجود طلبات جديدة",
+      lowStockAlerts: "تنبيهات انخفاض المخزون",
+      alertLowStock: "تنبيه عند انخفاض المنتجات في المخزون",
+      system: "النظام",
+      maintenanceMode: "وضع الصيانة",
+      putStoreMaintenance: "ضع متجرك في وضع الصيانة",
+      saveSettings: "حفظ الإعدادات",
+    },
+    fr: {
+      settings: "Paramètres",
+      configure: "Configurez les paramètres et préférences de votre boutique",
+      generalSettings: "Paramètres généraux",
+      storeName: "Nom du magasin",
+      storeEmail: "Email du magasin",
+      currency: "Devise",
+      timezone: "Fuseau horaire",
+      notifications: "Notifications",
+      emailNotifications: "Notifications par email",
+      receiveEmail: "Recevoir des notifications générales par email",
+      orderNotifications: "Notifications de commande",
+      getNotified: "Recevoir une notification lors de nouvelles commandes",
+      lowStockAlerts: "Alertes de stock faible",
+      alertLowStock: "Alerte lorsque les produits sont en rupture de stock",
+      system: "Système",
+      maintenanceMode: "Mode maintenance",
+      putStoreMaintenance: "Mettre votre boutique en mode maintenance",
+      saveSettings: "Enregistrer les paramètres",
+    },
+  } as const
+  type Lang = keyof typeof translations
+  const t = translations[lang as Lang] || translations.en
+
   const handleSave = () => {
     console.log("Saving settings:", settings)
   }
@@ -28,19 +96,19 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 font-clash">Settings</h1>
-        <p className="mt-2 text-gray-600 font-inter">Configure your store settings and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900 font-clash">{t.settings}</h1>
+        <p className="mt-2 text-gray-600 font-inter">{t.configure}</p>
       </div>
 
       {/* General Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>General Settings</CardTitle>
+          <CardTitle>{t.generalSettings}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="store-name">Store Name</Label>
+              <Label htmlFor="store-name">{t.storeName}</Label>
               <Input
                 id="store-name"
                 value={settings.storeName}
@@ -48,7 +116,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="store-email">Store Email</Label>
+              <Label htmlFor="store-email">{t.storeEmail}</Label>
               <Input
                 id="store-email"
                 type="email"
@@ -59,7 +127,7 @@ export default function SettingsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">{t.currency}</Label>
               <Select
                 value={settings.currency}
                 onValueChange={(value) => setSettings({ ...settings, currency: value })}
@@ -75,7 +143,7 @@ export default function SettingsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone">{t.timezone}</Label>
               <Select
                 value={settings.timezone}
                 onValueChange={(value) => setSettings({ ...settings, timezone: value })}
@@ -97,13 +165,13 @@ export default function SettingsPage() {
       {/* Notification Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Notifications</CardTitle>
+          <CardTitle>{t.notifications}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="email-notifications">Email Notifications</Label>
-              <p className="text-sm text-gray-600">Receive general email notifications</p>
+              <Label htmlFor="email-notifications">{t.emailNotifications}</Label>
+              <p className="text-sm text-gray-600">{t.receiveEmail}</p>
             </div>
             <Switch
               id="email-notifications"
@@ -113,8 +181,8 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="order-notifications">Order Notifications</Label>
-              <p className="text-sm text-gray-600">Get notified when new orders are placed</p>
+              <Label htmlFor="order-notifications">{t.orderNotifications}</Label>
+              <p className="text-sm text-gray-600">{t.getNotified}</p>
             </div>
             <Switch
               id="order-notifications"
@@ -124,8 +192,8 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="low-stock-alerts">Low Stock Alerts</Label>
-              <p className="text-sm text-gray-600">Alert when products are running low</p>
+              <Label htmlFor="low-stock-alerts">{t.lowStockAlerts}</Label>
+              <p className="text-sm text-gray-600">{t.alertLowStock}</p>
             </div>
             <Switch
               id="low-stock-alerts"
@@ -139,13 +207,13 @@ export default function SettingsPage() {
       {/* System Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>System</CardTitle>
+          <CardTitle>{t.system}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="maintenance-mode">Maintenance Mode</Label>
-              <p className="text-sm text-gray-600">Put your store in maintenance mode</p>
+              <Label htmlFor="maintenance-mode">{t.maintenanceMode}</Label>
+              <p className="text-sm text-gray-600">{t.putStoreMaintenance}</p>
             </div>
             <Switch
               id="maintenance-mode"
@@ -160,7 +228,7 @@ export default function SettingsPage() {
       <div className="flex justify-end">
         <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
           <Save className="mr-2 h-4 w-4" />
-          Save Settings
+          {t.saveSettings}
         </Button>
       </div>
     </div>

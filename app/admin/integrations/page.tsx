@@ -7,7 +7,102 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Save, ExternalLink, CheckCircle, XCircle } from "lucide-react"
-import { LanguageContext } from "@/components/LanguageProvider"
+import { LanguageContext } from "../layout"
+
+const translations = {
+  en: {
+    integrations: "Integrations",
+    manageIntegrations: "Manage your third-party integrations",
+    connectService: "Connect a Service",
+    connected: "Connected",
+    notConnected: "Not Connected",
+    connect: "Connect",
+    disconnect: "Disconnect",
+    integrationName: "Integration Name",
+    status: "Status",
+    actions: "Actions",
+    'Google Sheets': 'Google Sheets',
+    'Connected': 'Connected',
+    'Disconnected': 'Disconnected',
+    'Export orders and data to Google Sheets': 'Export orders and data to Google Sheets',
+    'API Key': 'API Key',
+    'Enter Google Sheets API key': 'Enter Google Sheets API key',
+    'Sheet ID': 'Sheet ID',
+    'Enter Google Sheet ID': 'Enter Google Sheet ID',
+    'Test Connection': 'Test Connection',
+    'View Documentation': 'View Documentation',
+    'Google Analytics': 'Google Analytics',
+    'Track website analytics and user behavior': 'Track website analytics and user behavior',
+    'Tracking ID': 'Tracking ID',
+    'Facebook Pixel': 'Facebook Pixel',
+    'Track conversions and optimize Facebook ads': 'Track conversions and optimize Facebook ads',
+    'Pixel ID': 'Pixel ID',
+    'Enter Facebook Pixel ID': 'Enter Facebook Pixel ID',
+    'Save All Integrations': 'Save All Integrations',
+  },
+  fr: {
+    integrations: "Intégrations",
+    manageIntegrations: "Gérez vos intégrations tierces",
+    connectService: "Connecter un service",
+    connected: "Connecté",
+    notConnected: "Non connecté",
+    connect: "Connecter",
+    disconnect: "Déconnecter",
+    integrationName: "Nom de l'intégration",
+    status: "Statut",
+    actions: "Actions",
+    'Google Sheets': 'Google Sheets',
+    'Connected': 'Connecté',
+    'Disconnected': 'Déconnecté',
+    'Export orders and data to Google Sheets': 'Exporter les commandes et données vers Google Sheets',
+    'API Key': 'Clé API',
+    'Enter Google Sheets API key': 'Entrez la clé API Google Sheets',
+    'Sheet ID': 'ID de la feuille',
+    'Enter Google Sheet ID': 'Entrez l\'ID de la feuille Google',
+    'Test Connection': 'Tester la connexion',
+    'View Documentation': 'Voir la documentation',
+    'Google Analytics': 'Google Analytics',
+    'Track website analytics and user behavior': 'Suivez les analyses et le comportement des utilisateurs',
+    'Tracking ID': 'ID de suivi',
+    'Facebook Pixel': 'Pixel Facebook',
+    'Track conversions and optimize Facebook ads': 'Suivez les conversions et optimisez les publicités Facebook',
+    'Pixel ID': 'ID du pixel',
+    'Enter Facebook Pixel ID': 'Entrez l\'ID du pixel Facebook',
+    'Save All Integrations': 'Enregistrer toutes les intégrations',
+  },
+  ar: {
+    integrations: "التكاملات",
+    manageIntegrations: "إدارة تكاملات الطرف الثالث",
+    connectService: "ربط خدمة",
+    connected: "متصل",
+    notConnected: "غير متصل",
+    connect: "ربط",
+    disconnect: "فصل",
+    integrationName: "اسم التكامل",
+    status: "الحالة",
+    actions: "الإجراءات",
+    'Google Sheets': 'جوجل شيتس',
+    'Connected': 'متصل',
+    'Disconnected': 'غير متصل',
+    'Export orders and data to Google Sheets': 'تصدير الطلبات والبيانات إلى جوجل شيتس',
+    'API Key': 'مفتاح API',
+    'Enter Google Sheets API key': 'أدخل مفتاح جوجل شيتس API',
+    'Sheet ID': 'معرف الورقة',
+    'Enter Google Sheet ID': 'أدخل معرف جوجل شيتس',
+    'Test Connection': 'اختبار الاتصال',
+    'View Documentation': 'عرض التوثيق',
+    'Google Analytics': 'تحليلات جوجل',
+    'Track website analytics and user behavior': 'تتبع تحليلات الموقع وسلوك المستخدم',
+    'Tracking ID': 'معرف التتبع',
+    'Facebook Pixel': 'فيسبوك بيكسل',
+    'Track conversions and optimize Facebook ads': 'تتبع التحويلات وتحسين إعلانات فيسبوك',
+    'Pixel ID': 'معرف البيكسل',
+    'Enter Facebook Pixel ID': 'أدخل معرف فيسبوك بيكسل',
+    'Save All Integrations': 'حفظ جميع التكاملات',
+  },
+} as const;
+
+type Lang = keyof typeof translations;
 
 const t = (key: string, lang: string) => {
   const translations: any = {
@@ -106,8 +201,8 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-6 bg-white text-black">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 font-clash">{t('Integrations', lang)}</h1>
-        <p className="mt-2 text-gray-600 font-inter">{t('Connect your store with external services', lang)}</p>
+        <h1 className="text-3xl font-bold text-gray-900 font-clash">{t("integrations", lang)}</h1>
+        <p className="mt-2 text-gray-600 font-inter">{t("manageIntegrations", lang)}</p>
       </div>
 
       {/* Google Sheets Integration */}

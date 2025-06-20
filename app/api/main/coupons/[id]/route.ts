@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getUserFromToken } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma/prismaClient';
 
 // Get coupon by ID (Admin only)
 export async function GET(
@@ -71,6 +71,7 @@ export async function PUT(
       discount,
       isActive,
       expiresAt,
+      maxUsage,
       productIds
     } = await req.json();
 
@@ -108,6 +109,24 @@ export async function PUT(
       );
     }
 
+    // Validate maxUsage if provided
+    if (maxUsage !== undefined && maxUsage !== null) {
+      if (typeof maxUsage !== 'number' || maxUsage < 1) {
+        return NextResponse.json(
+          { error: 'maxUsage must be a positive number or null for unlimited usage' },
+          { status: 400 }
+        );
+      }
+      
+      // Check if new maxUsage is less than current usedCount
+      if (maxUsage < existingCoupon.usedCount) {
+        return NextResponse.json(
+          { error: `maxUsage (${maxUsage}) cannot be less than current usage count (${existingCoupon.usedCount})` },
+          { status: 400 }
+        );
+      }
+    }
+
     // Validate products if provided
     if (productIds && Array.isArray(productIds) && productIds.length > 0) {
       const products = await prisma.product.findMany({
@@ -127,6 +146,7 @@ export async function PUT(
     if (discount !== undefined) updateData.discount = parseInt(discount);
     if (isActive !== undefined) updateData.isActive = isActive;
     if (expiresAt !== undefined) updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (maxUsage !== undefined) updateData.maxUsage = maxUsage;
 
     // Update coupon with transaction to handle product associations
     const updatedCoupon = await prisma.$transaction(async (prisma) => {
@@ -154,27 +174,78 @@ export async function PUT(
         }
       }
 
-            // Return updated coupon with associations
-            return await prisma.coupon.findUnique({
-              where: { id },
-              include: {
-                products: {
-                  include: {
-                    product: {
-                      select: { id: true, title: true, imageUrl: true }
-                    }
-                  }
-                }
+      // Return updated coupon with associations
+      return await prisma.coupon.findUnique({
+        where: { id },
+        include: {
+          products: {
+            include: {
+              product: {
+                select: { id: true, title: true, imageUrl: true }
               }
-            });
-          }); // Close prisma.$transaction
-      
-          return NextResponse.json({ coupon: updatedCoupon });
-        } catch (error) {
-          console.error('Update coupon error:', error);
-          return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-          );
+            }
+          }
         }
-      }
+      });
+    }); // Close prisma.$transaction
+
+    return NextResponse.json({ coupon: updatedCoupon });
+  } catch (error) {
+    console.error('Update coupon error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete coupon (Admin only)
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const currentUser = await getUserFromToken(req);
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin access required.' },
+        { status: 403 }
+      );
+    }
+
+    const { id } = params;
+
+    const existingCoupon = await prisma.coupon.findUnique({
+      where: { id }
+    });
+
+    if (!existingCoupon) {
+      return NextResponse.json(
+        { error: 'Coupon not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if coupon has been used
+    if (existingCoupon.usedCount > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete a coupon that has been used. Consider deactivating it instead.' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.coupon.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({
+      message: 'Coupon deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete coupon error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
