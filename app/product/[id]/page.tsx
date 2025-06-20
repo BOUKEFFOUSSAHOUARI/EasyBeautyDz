@@ -170,6 +170,20 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     // eslint-disable-next-line
   }, [orderFields.wilayaId, wilayas]);
 
+  // Facebook Pixel: Track ViewContent ("Voir le contenu") when product loads
+  useEffect(() => {
+    if (product && typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('track', 'ViewContent', {
+        content_name: product.title,
+        content_ids: [product.id],
+        content_type: 'product',
+        value: product.price,
+        currency: 'DZD',
+      });
+    }
+    // eslint-disable-next-line
+  }, [product]);
+
   function getCurrentPrice() {
     if (!product) return 0
     if (product.productPriceForQty && Array.isArray(product.productPriceForQty)) {
@@ -233,6 +247,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         setOrderSuccess("Order placed successfully!")
         setShipping(data.deliveryPrice ?? null)
         setTotalCost(data.totalCost ?? null)
+        if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+          // Facebook Pixel: Track Purchase ("Achat")
+          window.fbq('track', 'Purchase', {
+            value: data.totalCost,
+            currency: 'DZD',
+            content_ids: [product?.id],
+          });
+        }
       } else {
         setOrderError(data.error || "Order failed")
         setShipping(null)
@@ -365,7 +387,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button
                 className={`h-12 rounded-full font-inter w-full border-2 transition font-semibold ${quantity > 1 ? 'bg-white text-black border-black hover:bg-gray-50' : 'bg-[#9AE66E] hover:bg-[#8BD65A] text-black border-[#9AE66E]'}`}
                 style={quantity > 1 ? { background: 'white', color: 'black', borderColor: 'black' } : {}}
-                onClick={() => setShowCheckout(true)}
+                onClick={() => {
+                  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+                    // Facebook Pixel: Track InitiateCheckout ("Démarrer le paiement")
+                    window.fbq('track', 'InitiateCheckout', {
+                      value: getCurrentPrice() * quantity,
+                      currency: 'DZD',
+                      content_ids: [product?.id],
+                    });
+                  }
+                  setShowCheckout(true);
+                }}
               >
                 {t('Checkout', lang)}
               </Button>

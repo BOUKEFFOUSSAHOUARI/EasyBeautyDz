@@ -29,6 +29,16 @@ export default function SheetsListPage() {
     sheet.id.toLowerCase().includes(search.toLowerCase())
   )
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    if (e.target.value && typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      // Facebook Pixel: Track Search ("Recherche")
+      window.fbq('track', 'Search', {
+        search_string: e.target.value,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 bg-white text-black">
       <div>
@@ -43,7 +53,7 @@ export default function SheetsListPage() {
           <Input
             placeholder="Search by name or id..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={handleSearch}
             className="mb-4 bg-white text-black border-gray-300"
           />
           {loading ? (
