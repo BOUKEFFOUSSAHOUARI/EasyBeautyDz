@@ -32,6 +32,7 @@ const sidebarItems = [
   { href: "/admin/shipping", label: "Shipping", icon: Truck },
   { href: "/admin/cms", label: "CMS", icon: FileText },
   { href: "/admin/integrations", label: "Integrations", icon: Puzzle },
+  { href: "/admin/sheets", label: "Sheets", icon: FileText },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]

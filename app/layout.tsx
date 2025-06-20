@@ -4,11 +4,19 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { RootContent } from "@/components/root-content"
 import { LanguageProvider } from "@/components/LanguageProvider"
+import FacebookPixel from "@/components/FacebookPixel"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 })
+
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+    _fbq?: any;
+  }
+}
 
 export const metadata: Metadata = {
   title: "Planted - Fresh finds for every occasion",
@@ -34,6 +42,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <LanguageProvider>
           <RootContent>
+            <FacebookPixel />
             {children}
           </RootContent>
         </LanguageProvider>

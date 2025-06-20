@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, Package, ShoppingCart, DollarSign } from "lucide-react"
-import { useContext } from "react"
+import { useContext, useEffect, useState } from "react"
 import { LanguageContext } from "./layout"
 
 export default function AdminDashboard() {
@@ -64,49 +64,73 @@ export default function AdminDashboard() {
   type Lang = keyof typeof translations;
   const t = translations[lang as Lang] || translations.en
 
+  // Dashboard data state
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/main/dashboard')
+      .then(res => res.json())
+      .then(data => setDashboard(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-xl">Loading...</div>;
+  }
+
+  if (!dashboard) {
+    return <div className="min-h-screen flex items-center justify-center text-xl text-red-600">Failed to load dashboard data.</div>;
+  }
+
   const stats = [
     {
       title: t.totalOrders,
-      value: "1,234",
-      change: "+12%",
+      value: dashboard.totalOrders,
+      change: "+12%", // Placeholder, you can add real logic if needed
       trend: "up",
       icon: ShoppingCart,
     },
     {
       title: t.totalProducts,
-      value: "89",
-      change: "+3",
+      value: dashboard.totalProducts,
+      change: "+3", // Placeholder
       trend: "up",
       icon: Package,
     },
     {
       title: t.inStock,
-      value: "67",
-      change: "-5",
+      value: dashboard.inStock,
+      change: "-5", // Placeholder
       trend: "down",
       icon: Package,
     },
     {
       title: t.totalRevenue,
-      value: "$45,231",
-      change: "+18%",
+      value: dashboard.totalRevenue,
+      change: "+18%", // Placeholder
       trend: "up",
       icon: DollarSign,
     },
   ]
 
-  const recentOrders = [
-    { id: "#1234", customer: "John Doe", product: "Snake Plant", amount: "$38.00", status: t.completed },
-    { id: "#1235", customer: "Jane Smith", product: "ZZ Plant", amount: "$45.00", status: t.processing },
-    { id: "#1236", customer: "Bob Johnson", product: "Monstera", amount: "$65.00", status: t.shipped },
-    { id: "#1237", customer: "Alice Brown", product: "Pothos", amount: "$28.00", status: t.pending },
-  ]
+  // Map status to translation
+  const statusMap: Record<string, string> = {
+    COMPLETED: t.completed,
+    PROCESSING: t.processing,
+    SHIPPED: t.shipped,
+    PENDING: t.pending,
+    DELIVERED: t.completed, // fallback
+    CANCELLED: t.pending, // fallback
+  };
 
-  const lowStockProducts = [
-    { name: "Snake Plant", stock: 3, sku: "SP-001" },
-    { name: "Spray Bottle", stock: 1, sku: "SB-001" },
-    { name: "Plant Food", stock: 2, sku: "PF-001" },
-  ]
+  const recentOrders = (dashboard.recentOrders || []).map((order: any) => ({
+    ...order,
+    status: statusMap[order.status] || order.status
+  }));
+
+  const lowStockProducts = dashboard.lowStockProducts || [];
 
   return (
     <div className="space-y-8">
@@ -136,7 +160,6 @@ export default function AdminDashboard() {
                     <TrendingDown className="mr-1 h-3 w-3 text-red-500" />
                   )}
                   <span className={stat.trend === "up" ? "text-green-600" : "text-red-600"}>{stat.change}</span>
-                  <span className="ml-1">{t.fromLastMonth}</span>
                 </div>
               </CardContent>
             </Card>
@@ -152,16 +175,15 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentOrders.map((order) => (
+              {recentOrders.map((order: any) => (
                 <div key={order.id} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div>
-                    <p className="font-medium text-gray-900">{order.id}</p>
                     <p className="text-sm text-gray-600">
                       {order.customer} • {order.product}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-gray-900">{order.amount}</p>
+                    <p className="font-medium text-gray-900">{order.amount} DA</p>
                     <p className="text-sm text-gray-600">{order.status}</p>
                   </div>
                 </div>
@@ -177,7 +199,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {lowStockProducts.map((product) => (
+              {lowStockProducts.map((product: any) => (
                 <div key={product.sku} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div>
                     <p className="font-medium text-gray-900">{product.name}</p>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -178,199 +178,157 @@ const t = (key: string, lang: string) => {
 
 export default function IntegrationsPage() {
   const { lang } = useContext(LanguageContext);
-  const [integrations, setIntegrations] = useState({
-    googleSheets: {
-      enabled: true,
-      apiKey: "AIzaSyC4YfuuFM7bkQn8Xvlp...",
-      sheetId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-    },
-    googleAnalytics: {
-      enabled: false,
-      trackingId: "",
-    },
-    facebookPixel: {
-      enabled: false,
-      pixelId: "",
-    },
-  })
+  const [sheets, setSheets] = useState<{ name: string; id: string }[]>([]);
+  const [facebookPixelId, setFacebookPixelId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [success, setSuccess] = useState(false);
+  const [customToast, setCustomToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  const handleSave = () => {
-    console.log("Saving integrations:", integrations)
-  }
+  // Fetch integration data on mount
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/main/integration")
+      .then(res => res.json())
+      .then(data => {
+        if (data.integration) {
+          setSheets(Array.isArray(data.integration.sheetsIntegration) ? data.integration.sheetsIntegration : []);
+          setFacebookPixelId(data.integration.facebookPixelId || "");
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSheetChange = (idx: number, field: 'name' | 'id', value: string) => {
+    setSheets(sheets => sheets.map((sheet, i) => i === idx ? { ...sheet, [field]: value } : sheet));
+  };
+
+  const handleAddSheet = () => {
+    setSheets(sheets => [...sheets, { name: '', id: '' }]);
+  };
+
+  const handleRemoveSheet = (idx: number) => {
+    setSheets(sheets => sheets.filter((_, i) => i !== idx));
+  };
+
+  const handleSave = async () => {
+    setSuccess(false);
+    const res = await fetch("/api/main/integration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sheets, facebookPixelId }),
+    });
+    if (res.ok) {
+      setSuccess(true);
+      setCustomToast({ type: 'success', message: t('Saved successfully!', lang) || 'Saved successfully!' });
+      setTimeout(() => setCustomToast(null), 3000);
+    }
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-xl">Loading...</div>;
 
   return (
-    <div className="space-y-6 bg-white text-black">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 font-clash">{t("integrations", lang)}</h1>
-        <p className="mt-2 text-gray-600 font-inter">{t("manageIntegrations", lang)}</p>
+    <>
+      {customToast && (
+        <div className={`fixed top-4 left-1/2 z-[9999] -translate-x-1/2 px-6 py-3 rounded shadow-lg font-semibold text-center ${customToast.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{customToast.message}</div>
+      )}
+      <div className="space-y-6 bg-white text-black">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 font-clash">{t("integrations", lang)}</h1>
+          <p className="mt-2 text-gray-600 font-inter">{t("manageIntegrations", lang)}</p>
+        </div>
+
+        {/* Google Sheets Integrations */}
+        <Card className="bg-white text-black">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  {t('Google Sheets', lang)}
+                  <Badge variant={sheets.length > 0 ? "default" : "secondary"} className="ml-2">
+                    {sheets.length > 0 ? t('Connected', lang) : t('Disconnected', lang)}
+                  </Badge>
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">{t('Export orders and data to Google Sheets', lang)}</p>
+              </div>
+              {sheets.length > 0 ? (
+                <CheckCircle className="h-6 w-6 text-green-500" />
+              ) : (
+                <XCircle className="h-6 w-6 text-gray-400" />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {sheets.map((sheet, idx) => (
+              <div key={idx} className="flex items-center space-x-2 mb-2">
+                <div className="flex-1 space-y-2">
+                  <Label>{t('Sheet ID', lang)}</Label>
+                  <Input
+                    value={sheet.id}
+                    onChange={e => handleSheetChange(idx, 'id', e.target.value)}
+                    placeholder={t('Enter Google Sheet ID', lang)}
+                    className="bg-white text-black border-gray-300 focus:ring-green-200"
+                  />
+                  <Label>{t('Integration Name', lang)}</Label>
+                  <Input
+                    value={sheet.name}
+                    onChange={e => handleSheetChange(idx, 'name', e.target.value)}
+                    placeholder={t('Integration Name', lang)}
+                    className="bg-white text-black border-gray-300 focus:ring-green-200"
+                  />
+                </div>
+                <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveSheet(idx)}>
+                  <XCircle className="h-5 w-5 text-red-500" />
+                </Button>
+              </div>
+            ))}
+            <Button type="button" onClick={handleAddSheet} className="bg-green-100 text-green-800 border border-green-300 hover:bg-green-200">
+              + {t('Connect Service', lang)}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Facebook Pixel Integration */}
+        <Card className="bg-white text-black">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  {t('Facebook Pixel', lang)}
+                  <Badge variant={facebookPixelId ? "default" : "secondary"} className="ml-2">
+                    {facebookPixelId ? t('Connected', lang) : t('Disconnected', lang)}
+                  </Badge>
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">{t('Track conversions and optimize Facebook ads', lang)}</p>
+              </div>
+              {facebookPixelId ? (
+                <CheckCircle className="h-6 w-6 text-green-500" />
+              ) : (
+                <XCircle className="h-6 w-6 text-gray-400" />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pixel-id">{t('Pixel ID', lang)}</Label>
+              <Input
+                id="pixel-id"
+                value={facebookPixelId}
+                onChange={e => setFacebookPixelId(e.target.value)}
+                placeholder={t('Enter Facebook Pixel ID', lang)}
+                className="bg-white text-black border-gray-300 focus:ring-green-200"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
+            <Save className="mr-2 h-4 w-4" />
+            {t('Save All Integrations', lang)}
+          </Button>
+        </div>
       </div>
-
-      {/* Google Sheets Integration */}
-      <Card className="bg-white text-black">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                {t('Google Sheets', lang)}
-                <Badge variant={integrations.googleSheets.enabled ? "default" : "secondary"} className="ml-2">
-                  {integrations.googleSheets.enabled ? t('Connected', lang) : t('Disconnected', lang)}
-                </Badge>
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{t('Export orders and data to Google Sheets', lang)}</p>
-            </div>
-            {integrations.googleSheets.enabled ? (
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            ) : (
-              <XCircle className="h-6 w-6 text-gray-400" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="sheets-api">{t('API Key', lang)}</Label>
-            <Input
-              id="sheets-api"
-              value={integrations.googleSheets.apiKey}
-              onChange={(e) =>
-                setIntegrations({
-                  ...integrations,
-                  googleSheets: { ...integrations.googleSheets, apiKey: e.target.value },
-                })
-              }
-              placeholder={t('Enter Google Sheets API key', lang)}
-              className="bg-white text-black border-gray-300 focus:ring-green-200"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sheet-id">{t('Sheet ID', lang)}</Label>
-            <Input
-              id="sheet-id"
-              value={integrations.googleSheets.sheetId}
-              onChange={(e) =>
-                setIntegrations({
-                  ...integrations,
-                  googleSheets: { ...integrations.googleSheets, sheetId: e.target.value },
-                })
-              }
-              placeholder={t('Enter Google Sheet ID', lang)}
-              className="bg-white text-black border-gray-300 focus:ring-green-200"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {t('Test Connection', lang)}
-            </Button>
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              {t('View Documentation', lang)}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Google Analytics Integration */}
-      <Card className="bg-white text-black">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                {t('Google Analytics', lang)}
-                <Badge variant={integrations.googleAnalytics.enabled ? "default" : "secondary"} className="ml-2">
-                  {integrations.googleAnalytics.enabled ? t('Connected', lang) : t('Disconnected', lang)}
-                </Badge>
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{t('Track website analytics and user behavior', lang)}</p>
-            </div>
-            {integrations.googleAnalytics.enabled ? (
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            ) : (
-              <XCircle className="h-6 w-6 text-gray-400" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ga-tracking">{t('Tracking ID', lang)}</Label>
-            <Input
-              id="ga-tracking"
-              value={integrations.googleAnalytics.trackingId}
-              onChange={(e) =>
-                setIntegrations({
-                  ...integrations,
-                  googleAnalytics: { ...integrations.googleAnalytics, trackingId: e.target.value },
-                })
-              }
-              placeholder="G-XXXXXXXXXX"
-              className="bg-white text-black border-gray-300 focus:ring-green-200"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {t('Test Connection', lang)}
-            </Button>
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              {t('View Documentation', lang)}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Facebook Pixel Integration */}
-      <Card className="bg-white text-black">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                {t('Facebook Pixel', lang)}
-                <Badge variant={integrations.facebookPixel.enabled ? "default" : "secondary"} className="ml-2">
-                  {integrations.facebookPixel.enabled ? t('Connected', lang) : t('Disconnected', lang)}
-                </Badge>
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{t('Track conversions and optimize Facebook ads', lang)}</p>
-            </div>
-            {integrations.facebookPixel.enabled ? (
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            ) : (
-              <XCircle className="h-6 w-6 text-gray-400" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pixel-id">{t('Pixel ID', lang)}</Label>
-            <Input
-              id="pixel-id"
-              value={integrations.facebookPixel.pixelId}
-              onChange={(e) =>
-                setIntegrations({
-                  ...integrations,
-                  facebookPixel: { ...integrations.facebookPixel, pixelId: e.target.value },
-                })
-              }
-              placeholder={t('Enter Facebook Pixel ID', lang)}
-              className="bg-white text-black border-gray-300 focus:ring-green-200"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {t('Test Connection', lang)}
-            </Button>
-            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-              {t('View Documentation', lang)}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
-          <Save className="mr-2 h-4 w-4" />
-          {t('Save All Integrations', lang)}
-        </Button>
-      </div>
-    </div>
+    </>
   )
 }

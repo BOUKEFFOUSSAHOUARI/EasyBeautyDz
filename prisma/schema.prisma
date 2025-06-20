@@ -165,6 +165,12 @@ model Cms {
   @@map("cms")
 }
 
+model Dintegration {
+  id                String   @id @default(cuid())
+  sheetsIntegration Json?
+  facebookPixelId   String?
+}
+
 // Enums
 enum Role {
   EMPLOYEE
