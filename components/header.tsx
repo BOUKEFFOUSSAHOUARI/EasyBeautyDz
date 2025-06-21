@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { useState, useContext, useEffect } from 'react';
 import { Drawer } from "@/components/ui/drawer";
 import { LanguageContext } from './LanguageProvider';
+import Image from "next/image";
 
 export function Header() {
   const { user, loading } = useAuth();
@@ -27,8 +28,8 @@ export function Header() {
   return (
     <header className="border-b bg-white sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-black border-2 border-black px-3 py-1">
-          Planted
+        <Link href="/" className="flex items-center">
+          <Image src="/logo/easydzbeauty.png" alt="Logo" width={64} height={64} />
         </Link>
 
         {/* Desktop Nav */}
