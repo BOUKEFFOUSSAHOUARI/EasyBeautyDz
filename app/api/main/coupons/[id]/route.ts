@@ -5,6 +5,8 @@ import { getUserFromToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
+
 // Get coupon by ID (Admin only)
 export async function GET(
   req: NextRequest,

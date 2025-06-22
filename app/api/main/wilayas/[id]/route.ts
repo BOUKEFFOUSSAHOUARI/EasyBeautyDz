@@ -5,6 +5,8 @@ import { getUserFromToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
+
 // Update wilaya (Admin only)
 export async function PUT(
   req: NextRequest,

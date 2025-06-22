@@ -4,6 +4,8 @@ import { verifyToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     // Get the token from cookies

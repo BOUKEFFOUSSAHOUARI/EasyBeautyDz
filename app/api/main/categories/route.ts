@@ -4,6 +4,8 @@ import { getUserFromToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
+
 // Get all categories (Admin only - or public depending on requirements)
 export async function GET(req: NextRequest) {
   try {

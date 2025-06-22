@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "cms" ALTER COLUMN "heroTitle" DROP NOT NULL,
-ALTER COLUMN "heroDescription" DROP NOT NULL,
-ALTER COLUMN "heroImage" DROP NOT NULL;

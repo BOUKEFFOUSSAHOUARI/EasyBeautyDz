@@ -6,6 +6,8 @@ import { signToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();

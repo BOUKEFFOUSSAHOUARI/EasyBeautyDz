@@ -36,6 +36,7 @@ CREATE TABLE "products" (
     "isActivated" BOOLEAN NOT NULL DEFAULT true,
     "sku" TEXT,
     "quantity" INTEGER DEFAULT 0,
+    "productPriceForQty" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "categoryId" TEXT NOT NULL,
@@ -48,7 +49,6 @@ CREATE TABLE "orders" (
     "id" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
@@ -56,6 +56,8 @@ CREATE TABLE "orders" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "wilayaId" TEXT,
+    "baladia" TEXT,
+    "house" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
 );
@@ -75,9 +77,11 @@ CREATE TABLE "order_items" (
 CREATE TABLE "coupons" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
-    "discount" INTEGER NOT NULL,
+    "discount" DOUBLE PRECISION NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "expiresAt" TIMESTAMP(3),
+    "maxUsage" INTEGER,
+    "usedCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -99,10 +103,32 @@ CREATE TABLE "wilayas" (
     "name" TEXT NOT NULL,
     "deliveryPrice" DOUBLE PRECISION NOT NULL,
     "agencyName" TEXT NOT NULL,
+    "wilaya_number" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "wilayas_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "cms" (
+    "id" TEXT NOT NULL,
+    "heroTitle" TEXT,
+    "heroTitleColor" TEXT,
+    "heroDescription" TEXT,
+    "heroDescriptionColor" TEXT,
+    "heroImage" TEXT,
+
+    CONSTRAINT "cms_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Dintegration" (
+    "id" TEXT NOT NULL,
+    "sheetsIntegration" JSONB,
+    "facebookPixelId" TEXT,
+
+    CONSTRAINT "Dintegration_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

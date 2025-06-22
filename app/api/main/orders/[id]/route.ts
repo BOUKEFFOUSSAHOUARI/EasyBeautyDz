@@ -5,6 +5,7 @@ import { getUserFromToken } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma/prismaClient';
 
+export const dynamic = "force-dynamic";
 
 // Get order by ID
 export async function GET(
